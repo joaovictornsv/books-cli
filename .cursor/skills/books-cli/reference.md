@@ -1,6 +1,6 @@
 # books-cli reference
 
-**Binary:** `books` on PATH · Install: `go install ./cmd/books` · Dev fallback: `go build -o books ./cmd/books`
+**Binary:** `books` on PATH · `go install ./cmd/books` · Dev: `go build -o books ./cmd/books`
 
 ## Global flags
 
@@ -12,11 +12,7 @@
 
 ## Configuration
 
-Database path (first match):
-
-1. `BOOKS_DB` env var
-2. `database` in `~/.config/books/config.toml`
-3. Default: `~/.local/share/books/books.db`
+DB path (first match): `BOOKS_DB` env → `database` in `~/.config/books/config.toml` → `~/.local/share/books/books.db`
 
 ## Status enum
 
@@ -53,12 +49,12 @@ Nullable on existing books; agent must set on every `add`.
 | Flag | CLI default | Notes |
 | --- | --- | --- |
 | `--author` | empty | Optional |
-| `--category` | empty | **Agent must set on add** |
+| `--category` | empty | **Agent must set** |
 | `--status` | `NOT_STARTED` | Agent default: `TO_BUY` |
 | `--priority` | false | Sets `priority_to_buy = 1` |
 | `--eligible-to-sell` | false | |
 | `--notes` | empty | |
-| `--description` | empty | **Agent must set on add** — web synopsis; same language as title |
+| `--description` | empty | **Agent must set** — same language as title |
 
 ### `list`
 
@@ -74,17 +70,14 @@ Archived excluded unless `--status ARCHIVED`.
 
 ### `search [query]`
 
-Title or description substring (case-insensitive). Optional `--author` substring filter. Same pagination flags as `list`.
-
 | Flag | Default | Notes |
 | --- | --- | --- |
-| `query` (positional) | none | Optional; substring match on title or description |
-| `--term` | none | Repeatable; each value is OR'd with other terms |
+| `query` (positional) | none | Substring on title or description |
+| `--term` | none | Repeatable; all terms OR'd |
 | `--author` | none | AND filter on author substring |
-| `--page` | 1 | |
-| `--limit` | 20 (max 100) | |
+| `--page` / `--limit` | 1 / 20 | Max limit 100 |
 
-**At least one** positional `query` or `--term` is required. Positional query and `--term` can be combined — all terms are OR'd. Within each term, a book matches if the substring appears in **title or description**.
+**At least one** positional `query` or `--term` required. Each term matches title **or** description (case-insensitive).
 
 ```bash
 books search "dune"
@@ -92,13 +85,11 @@ books search --term hobbit --term "o hobbit"
 books search "senhor" --term lord --author "tolkien"
 ```
 
-**Bilingual collection:** titles and descriptions may be in **pt-BR or English**. Search is literal substring match — it does not translate. For alternate-language variants, use one command with multiple `--term` flags (e.g. `--term hobbit --term "o hobbit"`) instead of separate searches. See [SKILL.md](SKILL.md#bilingual-search-pt-br-and-english).
+For pt-BR/English variants, prefer one command with multiple `--term` flags over separate searches.
 
 ### `update [id]`
 
-At least one flag: `--title`, `--author`, `--category`, `--status`, `--notes`, `--description`, `--priority`, `--eligible-to-sell`, `--sold`.
-
-Pass `--category ""` to clear an existing category.
+At least one flag: `--title`, `--author`, `--category`, `--status`, `--notes`, `--description`, `--priority`, `--eligible-to-sell`, `--sold`. Pass `--category ""` to clear.
 
 ### `get [id]` · `archive [id]` · `config`
 
@@ -126,18 +117,7 @@ No extra flags beyond global `--json`.
 }
 ```
 
-**List/search:**
-
-```json
-{
-  "books": [],
-  "total": 45,
-  "page": 1,
-  "limit": 20
-}
-```
-
-`total` is the full filtered count across all pages.
+**List/search:** `{ "books": [], "total": 45, "page": 1, "limit": 20 }` — `total` is the full filtered count.
 
 ## Status side-effects (update)
 
