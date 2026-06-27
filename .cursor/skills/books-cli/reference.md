@@ -76,6 +76,8 @@ Archived excluded unless `--status ARCHIVED`.
 
 Title or description substring (case-insensitive). Optional `--author` substring filter. Same pagination flags as `list`.
 
+**Bilingual collection:** titles and descriptions may be in **pt-BR or English**. Search is literal substring match — it does not translate. When looking up a known book or topic, run separate queries for each language variant (e.g. `"hobbit"` and `"o hobbit"`) and merge by `id`. See [SKILL.md](SKILL.md#bilingual-search-pt-br-and-english).
+
 ### `update [id]`
 
 At least one flag: `--title`, `--author`, `--category`, `--status`, `--notes`, `--description`, `--priority`, `--eligible-to-sell`, `--sold`.

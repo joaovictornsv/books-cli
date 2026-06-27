@@ -144,13 +144,27 @@ On failure, show stderr and suggest a fix (duplicate title is not enforced — f
 
 Pagination is **always active** (default `page=1`, `limit=20`, max `limit=100`). Handle it explicitly — never assume one page is the full result set.
 
+The collection stores **titles and descriptions in both Brazilian Portuguese and English** (e.g. `Dune` with an English synopsis vs `O Hobbit` with a pt-BR synopsis). Search matches substrings in either field — a query in one language will not find a book whose title or description is only in the other.
+
 See [reference.md](reference.md) for flags and [examples.md](examples.md) for phrase → command mapping.
+
+### Bilingual search (pt-BR and English)
+
+When **searching** — including duplicate checks before `add` — consider **both languages**:
+
+1. **Derive variants** from the user's request: alternate edition titles (`The Hobbit` / `O Hobbit`), translated keywords (`senhor` / `lord`, `guerra` / `war`), or the language the user did *not* use when the book is commonly known in both.
+2. **Run separate `search` queries** for each meaningful variant (author filter can stay the same). One language per query is enough — do not concatenate both into a single query.
+3. **Merge results by `id`** across queries and pages before answering. Do not treat an empty first query as "no matches" until you have tried the other language when a plausible variant exists.
+4. **Author names** are usually language-agnostic — a single `--author` filter is fine; still try both title/description keywords when the title alone misses.
+5. **Descriptions** are searchable too — a pt-BR title may still match an English keyword in its synopsis (or vice versa), but do not rely on that; prefer explicit bilingual title/keyword variants.
+
+**List** with `--status` / `--priority` filters is language-agnostic. Use bilingual search when the user names a topic, title fragment, or "do I have X?" — not when they only ask for a status slice (e.g. wishlist, currently reading).
 
 ### Workflow
 
-1. Run the query with `--json`.
+1. Run the query with `--json` (and alternate-language `search` queries when applicable — see above).
 2. Read `total`, `page`, `limit`, and `books` from the response.
-3. If `total == 0`, say no matches.
+3. If **all** relevant queries return `total == 0`, say no matches.
 4. If `total <= limit`, show all results.
 5. If `total > limit`:
    - Show the current page in a table.

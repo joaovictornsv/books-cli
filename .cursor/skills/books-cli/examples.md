@@ -12,17 +12,25 @@ Phrase → command mapping. Always append `--json`. Resolve binary per [SKILL.md
 | "Add Sapiens as reading" | User override status: `books add "Sapiens" --author "Yuval Noah Harari" --category HISTORY --description "A brief history of humankind from the Cognitive Revolution to the present." --status READING --json` |
 | "Add Elon Musk biography" | `books add "Elon Musk" --author "Walter Isaacson" --category BIOGRAPHY --description "Biography of the entrepreneur behind Tesla, SpaceX, and other ventures." --status TO_BUY --json` |
 
-Before adding, search for duplicates when the title is well-known:
+Before adding, search for duplicates when the title is well-known. Try **both languages** when the book has common pt-BR and English editions:
 
 ```bash
 books search "dune" --page 1 --limit 20 --json
+books search "hobbit" --page 1 --limit 20 --json
+books search "o hobbit" --page 1 --limit 20 --json
 ```
 
+Merge by `id` before concluding the book is not in the library.
+
 ## Search
+
+Search matches title and description substrings. The DB mixes **pt-BR and English** — run separate queries per language variant and merge by `id`.
 
 | User says | Command |
 | --- | --- |
 | "Do I already have Dune?" | `books search "dune" --page 1 --limit 20 --json` |
+| "Do I have The Hobbit?" | `books search "hobbit" --page 1 --limit 20 --json` **and** `books search "o hobbit" --page 1 --limit 20 --json` — merge by `id` |
+| "Tenho O Senhor dos Anéis?" | `books search "senhor" --page 1 --limit 20 --json` **and** `books search "lord" --author "tolkien" --page 1 --limit 20 --json` |
 | "Any book with 'senhor' in the title?" | `books search "senhor" --page 1 --limit 20 --json` |
 | "Books about Arrakis" | `books search "arrakis" --page 1 --limit 20 --json` (matches description) |
 | "Find books by Le Guin" | `books search "guin" --page 1 --limit 20 --json` (empty query is rejected) |
@@ -31,6 +39,8 @@ books search "dune" --page 1 --limit 20 --json
 
 ## List
 
+Status filters are language-agnostic — no bilingual variants needed.
+
 | User says | Command |
 | --- | --- |
 | "What am I reading?" | `books list --status READING --page 1 --limit 20 --json` |
@@ -38,6 +48,7 @@ books search "dune" --page 1 --limit 20 --json
 | "Priority books to buy" | `books list --status TO_BUY --priority --page 1 --limit 20 --json` |
 | "Books I haven't started" | `books list --status NOT_STARTED --page 1 --limit 20 --json` |
 | "All my books" | `books list --page 1 --limit 20 --json` — paginate if `total > limit` |
+| "Fiction on my wishlist about war" | `books list --status TO_BUY --page 1 --limit 20 --json` **plus** `books search "war" --page 1 --limit 20 --json` and `books search "guerra" --page 1 --limit 20 --json` — intersect with `TO_BUY` / `FICTION` in the merged set |
 
 ## Update & other
 
