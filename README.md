@@ -29,18 +29,35 @@ Initial `books` table:
 | `id` | `INTEGER PRIMARY KEY` | Auto-increment |
 | `title` | `TEXT NOT NULL` | Book title |
 | `author` | `TEXT` | Optional |
-| `status` | `TEXT NOT NULL` | One of: `read`, `reading`, `not_started`, `to_buy` |
-| `priority_to_buy` | `TEXT` | One of: `low`, `medium`, `high`, or `NULL` |
+| `status` | `TEXT NOT NULL` | One of: `READ`, `READING`, `NOT_STARTED`, `TO_BUY`, `ARCHIVED` |
+| `priority_to_buy` | `INTEGER NOT NULL DEFAULT 0` | Boolean (`0` or `1`) |
 | `eligible_to_sell` | `INTEGER NOT NULL DEFAULT 0` | Boolean (`0` or `1`) |
+| `sold` | `INTEGER NOT NULL DEFAULT 0` | Boolean (`0` or `1`); whether the book was sold |
 | `notes` | `TEXT` | Free-form notes |
 | `added_at` | `TEXT NOT NULL` | ISO 8601 timestamp |
-| `finished_at` | `TEXT` | ISO 8601 timestamp, set when marked `read` |
+| `started_at` | `TEXT` | ISO 8601 timestamp; set when reading begins |
+| `finished_at` | `TEXT` | ISO 8601 timestamp; set when marked `READ` |
+
+### Status values
+
+All status values are **uppercase**:
+
+| Status | Meaning |
+| --- | --- |
+| `NOT_STARTED` | Owned or queued, not yet reading |
+| `READING` | Currently reading |
+| `READ` | Finished |
+| `TO_BUY` | On the wishlist |
+| `ARCHIVED` | Logical deletion; hidden from normal lists but retained in the database |
+
+`ARCHIVED` replaces hard delete for day-to-day use. A physical `delete` command may still exist for exceptional cases, but `archive` is the preferred path.
 
 ### Constraints
 
-- `status` must be one of: `read`, `reading`, `not_started`, `to_buy`
-- `priority_to_buy`, when set, must be one of: `low`, `medium`, `high`
-- `eligible_to_sell` must be `0` or `1`
+- `status` must be one of: `READ`, `READING`, `NOT_STARTED`, `TO_BUY`, `ARCHIVED`
+- `priority_to_buy`, `eligible_to_sell`, and `sold` must be `0` or `1`
+- `started_at` should be set when status changes to `READING` (and cleared or preserved per update rules)
+- `finished_at` should be set when status changes to `READ`
 
 ### Indexes (initial)
 
@@ -51,37 +68,42 @@ Initial `books` table:
 
 Binary name: `books`
 
+Full command reference: [docs/COMMANDS.md](docs/COMMANDS.md)
+
 ### Core commands
 
 ```bash
-books add "The Dispossessed" --status to-buy --priority high
-books add "Dune" --author "Frank Herbert" --status not_started
+books add "The Dispossessed" --status TO_BUY --priority
+books add "Dune" --author "Frank Herbert" --status NOT_STARTED
 
 books get 42
 books list
-books list --status reading
-books list --status to-buy --priority high
+books list --status READING
+books list --status TO_BUY --priority
 books list --eligible-to-sell
+books list --page 2 --limit 20
 
 books search "le guin"
-books search "dune" --author "herbert"
+books search "dune" --author "herbert" --page 1 --limit 10
 
-books update 42 --status read
-books update 42 --status to-buy --priority medium --eligible-to-sell
+books update 42 --status READ
+books update 42 --status TO_BUY --priority --eligible-to-sell
 books update 42 --notes "Borrowed from library"
 
-books delete 42
-# or
 books archive 42
 ```
+
+`list` and `search` support pagination (`--page`, `--limit`) for large libraries.
 
 ### Utility commands
 
 ```bash
 books stats
 books backup
-books import spreadsheet.csv
+books config
 ```
+
+`config` prints the effective CLI configuration (e.g. resolved database path, config file location, and which source won: env, config file, or default).
 
 ### Output formats
 
@@ -91,8 +113,12 @@ books import spreadsheet.csv
 Example:
 
 ```bash
-books list --status reading --json
+books list --status READING --json
 ```
+
+### Out of scope
+
+- **No `import` command.** Initial data migration from the spreadsheet will be done manually.
 
 ## Configuration
 
@@ -109,80 +135,63 @@ database = "/home/user/books.db"
 
 Default fallback (if unset): `~/.local/share/books/books.db`
 
+Inspect resolved settings at any time:
+
+```bash
+books config
+```
+
+## Releases
+
+- [Semantic Versioning](https://semver.org/) with GitHub releases and git tags (`v0.1.0`, …).
+- Each release includes a `books-linux-amd64` binary asset (linux/amd64).
+- Changes are tracked in [CHANGELOG.md](CHANGELOG.md).
+- Release workflow for agents: [.agents/github-releases/SKILL.md](.agents/github-releases/SKILL.md).
+
+## CI
+
+GitHub Actions runs on **every push and every pull request**:
+
+- Unit tests (`go test ./...`)
+- Build verification (`go build ./...`)
+
+CI must pass before merging.
+
 ## Project structure (planned)
 
 ```text
 books-cli/
+├── .agents/            # Agent skills (e.g. release workflow)
 ├── cmd/books/          # CLI entrypoint
+├── docs/
+│   └── COMMANDS.md     # Detailed command usage reference
 ├── internal/
 │   ├── db/             # SQLite access, migrations, queries
 │   ├── models/         # Book model and enums
 │   └── output/         # Table and JSON formatters
 ├── migrations/         # SQL migration files
+├── CHANGELOG.md
 └── README.md
 ```
-
-## Practical tips
-
-### 1. Single module for database logic
-
-Keep all SQL in one internal package (`internal/db`). The CLI (and a future MCP server) should call shared functions like `AddBook()`, `ListBooks(filters)`, and `UpdateBook()` instead of duplicating queries.
-
-### 2. Migrations from day one
-
-Use versioned SQL migrations from the start, even if v1 is just one `schema.sql`. A simple `schema_migrations` table avoids painful changes later when new columns are added.
-
-### 3. Backup is trivial
-
-SQLite is a single file. Support:
-
-```bash
-books backup
-```
-
-And document manual backup:
-
-```bash
-cp ~/.local/share/books/books.db ~/.local/share/books/books.db.bak
-```
-
-### 4. Import once from the spreadsheet
-
-Provide a one-time import path from the existing spreadsheet (CSV export). After validation, retire the sheet or keep it as a read-only reference.
-
-### 5. Human-friendly output by default
-
-Optimize for quick terminal use:
-
-- Table output for `list` and `search`
-- Clear errors for invalid status/priority values
-- `--json` only when needed for scripting
-
-### 6. MCP later, not now
-
-Do not build MCP in v1. If conversational management in Cursor becomes useful, add an MCP server that reuses the same `internal/db` package.
 
 ## Initial implementation scope
 
 ### v0.1
 
-- [ ] SQLite schema and migrations
-- [ ] `add`, `get`, `list`, `search`, `update`, `delete`
-- [ ] Status and priority validation
+- [ ] SQLite schema and migrations (uppercase statuses, booleans, date fields)
+- [ ] `add`, `get`, `list`, `search`, `update`, `archive`
+- [ ] Status and boolean field validation
 - [ ] Table output + `--json`
-- [ ] Configurable database path
+- [ ] Configurable database path + `config` command
+- [ ] `docs/COMMANDS.md`
+- [ ] CI (test + build on push/PR)
+- [ ] `CHANGELOG.md` maintained per release
 
 ### v0.2
 
 - [ ] `stats`
 - [ ] `backup`
-- [ ] CSV import from spreadsheet
-
-### Future
-
-- [ ] MCP server wrapper
-- [ ] Optional sync/export to CSV
-- [ ] Reading history and change log
+- [ ] Pagination for `list` and `search`
 
 ## Development
 
