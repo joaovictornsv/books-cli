@@ -181,18 +181,19 @@ books-cli/
 
 ### v0.1
 
-- [ ] SQLite schema and migrations (uppercase statuses, booleans, date fields)
-- [ ] `add`, `get`, `list`, `search`, `update`, `archive`, `delete`
-- [ ] Status and boolean field validation
-- [ ] Table output + `--json`
-- [ ] Configurable database path + `config` command
-- [ ] `docs/COMMANDS.md`
-- [ ] CI (test + build on push/PR)
-- [ ] `CHANGELOG.md` maintained per release
-- [ ] Pagination for `list` and `search`
+- [x] SQLite schema and migrations (uppercase statuses, booleans, date fields)
+- [x] `add`, `get`, `list`, `search`, `update`, `archive`, `delete`
+- [x] Status and boolean field validation
+- [x] Table output + `--json`
+- [x] Configurable database path + `config` command
+- [x] `docs/COMMANDS.md`
+- [x] CI (test + build on push/PR)
+- [x] `CHANGELOG.md` maintained per release
+- [x] Pagination for `list` and `search`
 
 ### v0.2
 
+- [ ] `count`
 - [ ] `stats`
 - [ ] `backup`
 
