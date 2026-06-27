@@ -11,6 +11,7 @@ type BooksPage struct {
 	Books      []models.Book
 	Total      int
 	Pagination *models.Pagination
+	Fields     []string
 }
 
 type Formatter interface {

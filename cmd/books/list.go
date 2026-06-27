@@ -57,5 +57,6 @@ func init() {
 	listCmd.Flags().BoolVar(&listPriority, "priority", false, "Only priority-to-buy books")
 	listCmd.Flags().BoolVar(&listEligibleToSell, "eligible-to-sell", false, "Only eligible-to-sell books")
 	addPaginationFlags(listCmd, &listPage, &listLimit)
+	addFieldsFlag(listCmd)
 	rootCmd.AddCommand(listCmd)
 }

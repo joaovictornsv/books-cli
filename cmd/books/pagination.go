@@ -9,6 +9,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const fieldsFlagName = "fields"
+
 func paginationFromFlags(cmd *cobra.Command, page, limit *int) (*models.Pagination, error) {
 	pagination := models.Pagination{Page: *page, Limit: *limit}
 	if err := pagination.Validate(); err != nil {
@@ -22,10 +24,34 @@ func addPaginationFlags(cmd *cobra.Command, page, limit *int) {
 	cmd.Flags().IntVar(limit, "limit", models.DefaultPageLimit, fmt.Sprintf("Results per page (max %d)", models.MaxPageLimit))
 }
 
+func addFieldsFlag(cmd *cobra.Command) {
+	cmd.Flags().String(fieldsFlagName, "", "Comma-separated book fields to return (requires --json)")
+}
+
+func fieldsFromFlags(cmd *cobra.Command) ([]string, error) {
+	if !cmd.Flags().Changed(fieldsFlagName) {
+		return nil, nil
+	}
+	raw, err := cmd.Flags().GetString(fieldsFlagName)
+	if err != nil {
+		return nil, err
+	}
+	return output.ParseFields(raw)
+}
+
 func printBooksResult(cmd *cobra.Command, result db.BooksResult, pagination *models.Pagination) error {
+	fields, err := fieldsFromFlags(cmd)
+	if err != nil {
+		return err
+	}
+	if fields != nil && !jsonOutput {
+		return fmt.Errorf("--fields requires --json")
+	}
+
 	return formatter().PrintBooks(cmd.OutOrStdout(), output.BooksPage{
 		Books:      result.Books,
 		Total:      result.Total,
 		Pagination: pagination,
+		Fields:     fields,
 	})
 }

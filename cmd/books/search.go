@@ -49,5 +49,6 @@ var searchCmd = &cobra.Command{
 func init() {
 	searchCmd.Flags().StringVar(&searchAuthor, "author", "", "Filter by author substring")
 	addPaginationFlags(searchCmd, &searchPage, &searchLimit)
+	addFieldsFlag(searchCmd)
 	rootCmd.AddCommand(searchCmd)
 }

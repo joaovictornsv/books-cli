@@ -97,6 +97,7 @@ books list --status TO_BUY --priority
 books list --eligible-to-sell
 books list --page 2 --limit 20
 books list --json
+books list --json --fields id,title,status
 ```
 
 ### Flags
@@ -108,8 +109,11 @@ books list --json
 | `--eligible-to-sell` | `false` | Only books with `eligible_to_sell = 1` |
 | `--page` | `1` | Page number (1-based); used with `--limit` |
 | `--limit` | `20` | Results per page; used with `--page` |
+| `--fields` | _(none)_ | Comma-separated book fields to return (requires `--json`) |
 
 Pagination applies when either `--page` or `--limit` is passed. If only one is set, the other defaults to `page=1` or `limit=20`.
+
+Allowed `--fields` values: `id`, `title`, `author`, `category`, `status`, `priority_to_buy`, `eligible_to_sell`, `sold`, `notes`, `description`, `added_at`, `started_at`, `finished_at`.
 
 ### JSON output
 
@@ -135,6 +139,8 @@ With pagination:
 
 `total` is the full match count across all pages.
 
+With `--fields`, each item in `books` contains only the requested keys (in the order you passed them). Envelope fields (`total`, `page`, `limit`) are always included.
+
 ## `search`
 
 Search books by title or description substring (case-insensitive). Optionally filter by author substring.
@@ -144,6 +150,7 @@ books search "le guin"
 books search "dune" --author "herbert"
 books search "dune" --author "herbert" --page 1 --limit 10
 books search "dune" --author "herbert" --json
+books search "dune" --json --fields id,title,author
 ```
 
 ### Arguments
@@ -159,6 +166,7 @@ books search "dune" --author "herbert" --json
 | `--author` | _(none)_ | Substring to match against author (case-insensitive) |
 | `--page` | `1` | Page number (1-based); used with `--limit` |
 | `--limit` | `20` | Results per page; used with `--page` |
+| `--fields` | _(none)_ | Comma-separated book fields to return (requires `--json`) |
 
 Archived books are excluded from results.
 

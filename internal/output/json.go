@@ -12,10 +12,10 @@ import (
 type JSONFormatter struct{}
 
 type booksResponse struct {
-	Books []models.Book `json:"books"`
-	Total int           `json:"total"`
-	Page  *int          `json:"page,omitempty"`
-	Limit *int          `json:"limit,omitempty"`
+	Books any `json:"books"`
+	Total int `json:"total"`
+	Page  *int `json:"page,omitempty"`
+	Limit *int `json:"limit,omitempty"`
 }
 
 func (JSONFormatter) PrintBook(w io.Writer, book models.Book) error {
@@ -30,8 +30,13 @@ func (JSONFormatter) PrintBooks(w io.Writer, page BooksPage) error {
 		books = []models.Book{}
 	}
 
+	var booksPayload any = books
+	if len(page.Fields) > 0 {
+		booksPayload = ProjectBooks(books, page.Fields)
+	}
+
 	resp := booksResponse{
-		Books: books,
+		Books: booksPayload,
 		Total: page.Total,
 	}
 	if page.Pagination != nil {
