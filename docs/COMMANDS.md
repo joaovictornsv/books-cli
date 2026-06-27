@@ -1,26 +1,229 @@
 # Command reference
 
-Detailed usage for the `books` CLI. This document will be expanded as commands are implemented.
+Detailed usage for the `books` CLI.
 
 ## Global flags
 
 | Flag | Description |
 | --- | --- |
-| `--json` | Machine-readable JSON output |
+| `--json` | Machine-readable JSON output (not supported by `config`) |
 | `--help` | Help for the current command |
+| `--version` | Print CLI version |
 
-## Commands
+## Configuration
 
-<!-- Populated during implementation. -->
+Database path resolution (first match wins):
+
+1. `BOOKS_DB` environment variable
+2. `database` key in `~/.config/books/config.toml`
+3. Default: `~/.local/share/books/books.db`
+
+Example config file:
+
+```toml
+database = "/home/user/books.db"
+```
+
+## Status values
+
+| Status | Meaning |
+| --- | --- |
+| `NOT_STARTED` | Owned or queued, not yet reading |
+| `READING` | Currently reading |
+| `READ` | Finished |
+| `TO_BUY` | On the wishlist |
+| `ARCHIVED` | Logical deletion; hidden from `list` and `search` |
+
+Status values are case-insensitive on input but stored as uppercase.
+
+## `add`
+
+Add a book to the database.
+
+```bash
+books add "The Dispossessed" --status TO_BUY --priority
+books add "Dune" --author "Frank Herbert" --status NOT_STARTED
+```
+
+### Arguments
+
+| Argument | Description |
+| --- | --- |
+| `title` | Book title (required) |
+
+### Flags
+
+| Flag | Default | Description |
+| --- | --- | --- |
+| `--author` | _(empty)_ | Author name |
+| `--status` | `NOT_STARTED` | One of the status values above |
+| `--priority` | `false` | Set `priority_to_buy` to `1` |
+| `--eligible-to-sell` | `false` | Set `eligible_to_sell` to `1` |
+| `--notes` | _(empty)_ | Free-form notes |
+
+### JSON output
+
+Returns a single book object.
+
+## `get`
+
+Show one book by ID.
+
+```bash
+books get 42
+books get 42 --json
+```
+
+### Arguments
+
+| Argument | Description |
+| --- | --- |
+| `id` | Positive integer book ID |
+
+### Exit codes
+
+- `0` on success
+- `1` if the book is not found or the ID is invalid
+
+## `list`
+
+List books with optional filters. Archived books are excluded unless you filter explicitly with `--status ARCHIVED`.
+
+```bash
+books list
+books list --status READING
+books list --status TO_BUY --priority
+books list --eligible-to-sell
+books list --json
+```
+
+### Flags
+
+| Flag | Description |
+| --- | --- |
+| `--status` | Filter by status |
+| `--priority` | Only books with `priority_to_buy = 1` |
+| `--eligible-to-sell` | Only books with `eligible_to_sell = 1` |
+
+### JSON output
+
+```json
+{
+  "books": [ ... ],
+  "total": 2
+}
+```
+
+### Planned for v0.2
+
+- `--page` and `--limit` pagination
+
+## `search`
+
+Search books by title substring (case-insensitive). Optionally filter by author substring.
+
+```bash
+books search "le guin"
+books search "dune" --author "herbert"
+books search "dune" --author "herbert" --json
+```
+
+### Arguments
+
+| Argument | Description |
+| --- | --- |
+| `query` | Substring to match against title |
+
+### Flags
+
+| Flag | Description |
+| --- | --- |
+| `--author` | Substring to match against author (case-insensitive) |
+
+Archived books are excluded from results.
+
+### JSON output
+
+Same shape as `list`.
+
+### Planned for v0.2
+
+- `--page` and `--limit` pagination
+
+## `update`
+
+Update one or more fields on an existing book. Only flags you pass are changed.
+
+```bash
+books update 42 --status READ
+books update 42 --status TO_BUY --priority --eligible-to-sell
+books update 42 --notes "Borrowed from library"
+books update 42 --title "Dune" --author "Frank Herbert"
+```
+
+### Arguments
+
+| Argument | Description |
+| --- | --- |
+| `id` | Positive integer book ID |
+
+### Flags
+
+| Flag | Description |
+| --- | --- |
+| `--title` | New title |
+| `--author` | New author |
+| `--status` | New status |
+| `--notes` | New notes |
+| `--priority` | Set `priority_to_buy` (`true` → `1`, `false` → `0`) |
+| `--eligible-to-sell` | Set `eligible_to_sell` |
+| `--sold` | Set `sold` |
+
+### Status side-effects
+
+- Changing status to `READING` sets `started_at` if it is not already set.
+- Changing status to `READ` sets `finished_at` if it is not already set.
+- Existing timestamps are not overwritten when re-entering `READING` or `READ`.
+
+## `archive`
+
+Logically delete a book by setting its status to `ARCHIVED`.
+
+```bash
+books archive 42
+```
+
+Archived books are hidden from `list` and `search` by default.
+
+## `config`
+
+Print the effective CLI configuration. Always human-readable (ignores `--json`).
+
+```bash
+books config
+```
+
+Example output:
+
+```text
+database_path: /home/user/.local/share/books/books.db
+config_path: /home/user/.config/books/config.toml
+config_exists: false
+source: default
+```
+
+`source` is one of: `env`, `config_file`, `default`.
+
+## Planned for v0.2
 
 | Command | Summary |
 | --- | --- |
-| `add` | Add a book |
-| `get` | Show one book by ID |
-| `list` | List books with optional filters and pagination |
-| `search` | Search by title/author with optional pagination |
-| `update` | Update book fields |
-| `archive` | Logically delete a book (`ARCHIVED` status) |
 | `stats` | Reading statistics |
 | `backup` | Copy the database file |
-| `config` | Show effective CLI configuration |
+
+## Exit codes
+
+- `0` — success
+- `1` — validation error, not found, or other failure
+
+Errors are written to stderr.
