@@ -226,6 +226,50 @@ func TestRepositoryClearAuthor(t *testing.T) {
 	}
 }
 
+func TestRepositoryDelete(t *testing.T) {
+	database, err := OpenMemory()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer database.Close()
+
+	repo := NewRepository(database)
+	ctx := context.Background()
+
+	created, err := repo.Create(ctx, models.Book{
+		Title:          "Dune",
+		Status:         models.StatusNotStarted,
+		PriorityToBuy:  0,
+		EligibleToSell: 0,
+		Sold:           0,
+		AddedAt:        models.NowTimestamp(),
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	deleted, err := repo.Delete(ctx, created.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if deleted.Title != "Dune" {
+		t.Fatalf("got title %q", deleted.Title)
+	}
+
+	_, err = repo.GetByID(ctx, created.ID)
+	if !errors.Is(err, ErrNotFound) {
+		t.Fatalf("expected ErrNotFound after delete, got %v", err)
+	}
+
+	books, err := repo.List(ctx, ListFilter{IncludeArchived: true})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(books.Books) != 0 {
+		t.Fatalf("expected 0 books after delete, got %d", len(books.Books))
+	}
+}
+
 func TestGetByIDNotFound(t *testing.T) {
 	database, err := OpenMemory()
 	if err != nil {

@@ -91,6 +91,7 @@ books update 42 --status TO_BUY --priority --eligible-to-sell
 books update 42 --notes "Borrowed from library"
 
 books archive 42
+books delete 42
 ```
 
 `list` and `search` support pagination (`--page`, `--limit`) for large libraries.
@@ -179,7 +180,7 @@ books-cli/
 ### v0.1
 
 - [ ] SQLite schema and migrations (uppercase statuses, booleans, date fields)
-- [ ] `add`, `get`, `list`, `search`, `update`, `archive`
+- [ ] `add`, `get`, `list`, `search`, `update`, `archive`, `delete`
 - [ ] Status and boolean field validation
 - [ ] Table output + `--json`
 - [ ] Configurable database path + `config` command

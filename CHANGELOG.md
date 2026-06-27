@@ -9,8 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `delete` command to permanently remove a book from the database
 - SQLite-backed `books` table with embedded migrations and schema validation
-- Commands: `add`, `get`, `list`, `search`, `update`, `archive`, `config`
+- Commands: `add`, `get`, `list`, `search`, `update`, `archive`, `delete`, `config`
 - Status and boolean field validation with automatic `started_at` / `finished_at` timestamps
 - Human-readable table output and `--json` for scripting
 - Configurable database path via `BOOKS_DB`, `~/.config/books/config.toml`, or default path

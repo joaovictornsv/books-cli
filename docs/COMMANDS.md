@@ -210,6 +210,27 @@ books archive 42
 
 Archived books are hidden from `list` and `search` by default.
 
+## `delete`
+
+Permanently remove a book from the database. Unlike `archive`, the row is deleted and cannot be recovered from the CLI.
+
+```bash
+books delete 42
+```
+
+### Arguments
+
+| Argument | Description |
+| --- | --- |
+| `id` | Positive integer book ID |
+
+### Exit codes
+
+- `0` on success
+- `1` if the book is not found or the ID is invalid
+
+Returns the deleted book (same JSON shape as `get`).
+
 ## `config`
 
 Print the effective CLI configuration. Always human-readable (ignores `--json`).

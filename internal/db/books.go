@@ -252,6 +252,20 @@ func (r *Repository) Archive(ctx context.Context, id int64) (models.Book, error)
 	status := models.StatusArchived
 	return r.Update(ctx, id, models.BookPatch{Status: &status})
 }
+
+func (r *Repository) Delete(ctx context.Context, id int64) (models.Book, error) {
+	book, err := r.GetByID(ctx, id)
+	if err != nil {
+		return models.Book{}, err
+	}
+
+	_, err = r.db.sql.ExecContext(ctx, `DELETE FROM books WHERE id = ?`, id)
+	if err != nil {
+		return models.Book{}, fmt.Errorf("delete book: %w", err)
+	}
+
+	return book, nil
+}
 func (r *Repository) queryBooks(ctx context.Context, query string, args ...any) ([]models.Book, error) {
 	rows, err := r.db.sql.QueryContext(ctx, query, args...)
 	if err != nil {
