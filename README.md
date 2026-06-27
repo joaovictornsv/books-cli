@@ -23,7 +23,7 @@ books search "le guin" --json
 
 Use `--json` on any command except `config` for scripting. Full flag reference: [docs/COMMANDS.md](docs/COMMANDS.md).
 
-**Planned (v0.2):** `count`, `stats`, `backup`
+**Next steps:** see [NEXT_STEPS.md](NEXT_STEPS.md)
 
 ## Setup
 
