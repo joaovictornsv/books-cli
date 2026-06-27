@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-06-27
+
 ### Added
 
 - Repeatable `--term` on `search` for OR matching across title/description (positional query still supported)
