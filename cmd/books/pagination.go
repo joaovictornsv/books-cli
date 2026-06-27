@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/joaovictornsv/books-cli/internal/db"
 	"github.com/joaovictornsv/books-cli/internal/models"
 	"github.com/joaovictornsv/books-cli/internal/output"
@@ -8,20 +10,7 @@ import (
 )
 
 func paginationFromFlags(cmd *cobra.Command, page, limit *int) (*models.Pagination, error) {
-	if !cmd.Flags().Changed("page") && !cmd.Flags().Changed("limit") {
-		return nil, nil
-	}
-
-	p := *page
-	l := *limit
-	if !cmd.Flags().Changed("page") {
-		p = 1
-	}
-	if !cmd.Flags().Changed("limit") {
-		l = models.DefaultPageLimit
-	}
-
-	pagination := models.Pagination{Page: p, Limit: l}
+	pagination := models.Pagination{Page: *page, Limit: *limit}
 	if err := pagination.Validate(); err != nil {
 		return nil, err
 	}
@@ -30,7 +19,7 @@ func paginationFromFlags(cmd *cobra.Command, page, limit *int) (*models.Paginati
 
 func addPaginationFlags(cmd *cobra.Command, page, limit *int) {
 	cmd.Flags().IntVar(page, "page", 1, "Page number (1-based)")
-	cmd.Flags().IntVar(limit, "limit", models.DefaultPageLimit, "Results per page")
+	cmd.Flags().IntVar(limit, "limit", models.DefaultPageLimit, fmt.Sprintf("Results per page (max %d)", models.MaxPageLimit))
 }
 
 func printBooksResult(cmd *cobra.Command, result db.BooksResult, pagination *models.Pagination) error {

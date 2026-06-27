@@ -12,6 +12,9 @@ func TestPaginationValidate(t *testing.T) {
 	if err := (Pagination{Page: 1, Limit: 0}).Validate(); err == nil {
 		t.Fatal("expected error for limit 0")
 	}
+	if err := (Pagination{Page: 1, Limit: MaxPageLimit + 1}).Validate(); err == nil {
+		t.Fatal("expected error for limit above max")
+	}
 }
 
 func TestPaginationOffset(t *testing.T) {

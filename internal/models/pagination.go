@@ -2,7 +2,10 @@ package models
 
 import "fmt"
 
-const DefaultPageLimit = 20
+const (
+	DefaultPageLimit = 20
+	MaxPageLimit     = 100
+)
 
 type Pagination struct {
 	Page  int
@@ -23,6 +26,9 @@ func (p Pagination) Validate() error {
 	}
 	if p.Limit < 1 {
 		return fmt.Errorf("limit must be >= 1")
+	}
+	if p.Limit > MaxPageLimit {
+		return fmt.Errorf("limit must be <= %d", MaxPageLimit)
 	}
 	return nil
 }
