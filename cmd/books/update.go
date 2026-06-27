@@ -36,7 +36,11 @@ var updateCmd = &cobra.Command{
 			patch.Title = &updateTitle
 		}
 		if flags.Changed("author") {
-			patch.Author = &updateAuthor
+			if updateAuthor == "" {
+				patch.ClearAuthor = true
+			} else {
+				patch.Author = &updateAuthor
+			}
 		}
 		if flags.Changed("status") {
 			status, err := models.ParseStatus(updateStatus)
@@ -61,13 +65,13 @@ var updateCmd = &cobra.Command{
 			patch.Sold = &v
 		}
 
-		if patch.Title == nil && patch.Author == nil && patch.Status == nil &&
+		if patch.Title == nil && patch.Author == nil && !patch.ClearAuthor && patch.Status == nil &&
 			patch.Notes == nil && patch.PriorityToBuy == nil &&
 			patch.EligibleToSell == nil && patch.Sold == nil {
 			return fmt.Errorf("no fields to update: pass at least one flag")
 		}
 
-		return runWithRepo(func(ctx context.Context, repo *db.Repository) error {
+		return runWithRepo(cmd.Context(), func(ctx context.Context, repo *db.Repository) error {
 			book, err := repo.Update(ctx, id, patch)
 			if err != nil {
 				return handleRepoError(err)

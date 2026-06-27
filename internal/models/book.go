@@ -23,6 +23,7 @@ type Book struct {
 type BookPatch struct {
 	Title          *string
 	Author         *string
+	ClearAuthor    bool
 	Status         *Status
 	PriorityToBuy  *int
 	EligibleToSell *int
@@ -48,7 +49,7 @@ func ValidateBool01(name string, v int) error {
 	return nil
 }
 
-func (b *Book) Validate() error {
+func (b *Book) ValidateForCreate() error {
 	if strings.TrimSpace(b.Title) == "" {
 		return fmt.Errorf("title is required")
 	}
@@ -62,6 +63,13 @@ func (b *Book) Validate() error {
 		return err
 	}
 	if err := ValidateBool01("sold", b.Sold); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (b *Book) Validate() error {
+	if err := b.ValidateForCreate(); err != nil {
 		return err
 	}
 	if err := validateTimestamp("added_at", b.AddedAt, true); err != nil {

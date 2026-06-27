@@ -65,11 +65,11 @@ func handleRepoError(err error) error {
 	return err
 }
 
-func runWithRepo(fn func(context.Context, *db.Repository) error) error {
+func runWithRepo(ctx context.Context, fn func(context.Context, *db.Repository) error) error {
 	repo, cleanup, err := openRepo()
 	if err != nil {
 		return err
 	}
 	defer cleanup()
-	return fn(context.Background(), repo)
+	return fn(ctx, repo)
 }

@@ -148,6 +148,39 @@ func TestRepositoryListFilters(t *testing.T) {
 	}
 }
 
+func TestRepositoryClearAuthor(t *testing.T) {
+	database, err := OpenMemory()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer database.Close()
+
+	repo := NewRepository(database)
+	ctx := context.Background()
+	author := "Frank Herbert"
+
+	created, err := repo.Create(ctx, models.Book{
+		Title:          "Dune",
+		Author:         &author,
+		Status:         models.StatusNotStarted,
+		PriorityToBuy:  0,
+		EligibleToSell: 0,
+		Sold:           0,
+		AddedAt:        models.NowTimestamp(),
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	updated, err := repo.Update(ctx, created.ID, models.BookPatch{ClearAuthor: true})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if updated.Author != nil {
+		t.Fatalf("expected author cleared, got %v", updated.Author)
+	}
+}
+
 func TestGetByIDNotFound(t *testing.T) {
 	database, err := OpenMemory()
 	if err != nil {

@@ -67,6 +67,27 @@ func TestBookValidate(t *testing.T) {
 	}
 }
 
+func TestBookValidateForCreate(t *testing.T) {
+	book := Book{
+		Title:          "Title",
+		Status:         StatusNotStarted,
+		PriorityToBuy:  0,
+		EligibleToSell: 0,
+		Sold:           0,
+	}
+	if err := book.ValidateForCreate(); err != nil {
+		t.Fatal(err)
+	}
+
+	book.AddedAt = ""
+	if err := book.ValidateForCreate(); err != nil {
+		t.Fatal("ValidateForCreate should not require added_at")
+	}
+	if err := book.Validate(); err == nil {
+		t.Fatal("expected full Validate to require added_at")
+	}
+}
+
 func TestToBool01(t *testing.T) {
 	if ToBool01(true) != 1 {
 		t.Fatal("expected 1")

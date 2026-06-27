@@ -17,7 +17,7 @@ var getCmd = &cobra.Command{
 			return err
 		}
 
-		return runWithRepo(func(ctx context.Context, repo *db.Repository) error {
+		return runWithRepo(cmd.Context(), func(ctx context.Context, repo *db.Repository) error {
 			book, err := repo.GetByID(ctx, id)
 			if err != nil {
 				return handleRepoError(err)

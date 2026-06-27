@@ -2,7 +2,6 @@ package main
 
 import (
 	"github.com/joaovictornsv/books-cli/internal/config"
-	"github.com/joaovictornsv/books-cli/internal/output"
 	"github.com/spf13/cobra"
 )
 
@@ -14,7 +13,7 @@ var configCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return output.PrintConfigHuman(cmd.OutOrStdout(), cfg)
+		return formatter().PrintConfig(cmd.OutOrStdout(), cfg)
 	},
 }
 

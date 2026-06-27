@@ -38,7 +38,9 @@ func (TableFormatter) PrintConfig(w io.Writer, cfg config.Config) error {
 
 func printBooksTable(w io.Writer, page BooksPage) error {
 	tw := tabwriter.NewWriter(w, 0, 0, 2, ' ', 0)
-	_, _ = fmt.Fprintln(tw, "ID\tTITLE\tAUTHOR\tSTATUS\tPRIORITY\tSELL\tSOLD\tADDED")
+	if _, err := fmt.Fprintln(tw, "ID\tTITLE\tAUTHOR\tSTATUS\tPRIORITY\tSELL\tSOLD\tADDED"); err != nil {
+		return err
+	}
 	for _, book := range page.Books {
 		_, err := fmt.Fprintf(tw, "%d\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n",
 			book.ID,

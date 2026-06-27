@@ -39,8 +39,11 @@ var addCmd = &cobra.Command{
 		if addNotes != "" {
 			book.Notes = &addNotes
 		}
+		if err := book.ValidateForCreate(); err != nil {
+			return err
+		}
 
-		return runWithRepo(func(ctx context.Context, repo *db.Repository) error {
+		return runWithRepo(cmd.Context(), func(ctx context.Context, repo *db.Repository) error {
 			created, err := repo.Create(ctx, book)
 			if err != nil {
 				return err

@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
 	"github.com/joaovictornsv/books-cli/internal/db"
 	"github.com/spf13/cobra"
@@ -18,8 +20,13 @@ var searchCmd = &cobra.Command{
 	Short: "Search books by title and optional author",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
+		query := strings.TrimSpace(args[0])
+		if query == "" {
+			return fmt.Errorf("search query cannot be empty")
+		}
+
 		filter := db.SearchFilter{
-			Query:  args[0],
+			Query:  query,
 			Author: searchAuthor,
 		}
 
@@ -29,7 +36,7 @@ var searchCmd = &cobra.Command{
 		}
 		filter.Pagination = pagination
 
-		return runWithRepo(func(ctx context.Context, repo *db.Repository) error {
+		return runWithRepo(cmd.Context(), func(ctx context.Context, repo *db.Repository) error {
 			result, err := repo.Search(ctx, filter)
 			if err != nil {
 				return err

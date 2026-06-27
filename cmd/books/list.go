@@ -42,7 +42,7 @@ var listCmd = &cobra.Command{
 		}
 		filter.Pagination = pagination
 
-		return runWithRepo(func(ctx context.Context, repo *db.Repository) error {
+		return runWithRepo(cmd.Context(), func(ctx context.Context, repo *db.Repository) error {
 			result, err := repo.List(ctx, filter)
 			if err != nil {
 				return err

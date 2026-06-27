@@ -94,33 +94,15 @@ func (r *Repository) GetByID(ctx context.Context, id int64) (models.Book, error)
 
 func (r *Repository) List(ctx context.Context, filter ListFilter) (BooksResult, error) {
 	where, args := buildListWhere(filter)
-
-	total, err := r.countBooks(ctx, where, args)
-	if err != nil {
-		return BooksResult{}, err
-	}
-
-	query := `
-		SELECT id, title, author, status, priority_to_buy, eligible_to_sell, sold,
-		       notes, added_at, started_at, finished_at
-		FROM books WHERE 1=1` + where + ` ORDER BY id ASC`
-
-	queryArgs := append([]any{}, args...)
-	if filter.Pagination != nil && filter.Pagination.Enabled() {
-		query += ` LIMIT ? OFFSET ?`
-		queryArgs = append(queryArgs, filter.Pagination.Limit, filter.Pagination.Offset())
-	}
-
-	books, err := r.queryBooks(ctx, query, queryArgs...)
-	if err != nil {
-		return BooksResult{}, err
-	}
-	return BooksResult{Books: books, Total: total}, nil
+	return r.queryBooksPage(ctx, where, args, filter.Pagination)
 }
 
 func (r *Repository) Search(ctx context.Context, filter SearchFilter) (BooksResult, error) {
 	where, args := buildSearchWhere(filter)
+	return r.queryBooksPage(ctx, where, args, filter.Pagination)
+}
 
+func (r *Repository) queryBooksPage(ctx context.Context, where string, args []any, pagination *models.Pagination) (BooksResult, error) {
 	total, err := r.countBooks(ctx, where, args)
 	if err != nil {
 		return BooksResult{}, err
@@ -132,9 +114,9 @@ func (r *Repository) Search(ctx context.Context, filter SearchFilter) (BooksResu
 		FROM books WHERE 1=1` + where + ` ORDER BY id ASC`
 
 	queryArgs := append([]any{}, args...)
-	if filter.Pagination != nil && filter.Pagination.Enabled() {
+	if pagination != nil && pagination.Enabled() {
 		query += ` LIMIT ? OFFSET ?`
-		queryArgs = append(queryArgs, filter.Pagination.Limit, filter.Pagination.Offset())
+		queryArgs = append(queryArgs, pagination.Limit, pagination.Offset())
 	}
 
 	books, err := r.queryBooks(ctx, query, queryArgs...)
@@ -211,6 +193,8 @@ func (r *Repository) Update(ctx context.Context, id int64, patch models.BookPatc
 	}
 	if patch.Author != nil {
 		updated.Author = patch.Author
+	} else if patch.ClearAuthor {
+		updated.Author = nil
 	}
 	if patch.Status != nil {
 		updated.Status = *patch.Status
@@ -228,7 +212,7 @@ func (r *Repository) Update(ctx context.Context, id int64, patch models.BookPatc
 		updated.Notes = patch.Notes
 	}
 
-	applyStatusSideEffects(&current, &updated)
+	updated = models.ApplyStatusSideEffects(updated, models.NowTimestamp())
 
 	if err := updated.Validate(); err != nil {
 		return models.Book{}, err
@@ -261,18 +245,6 @@ func (r *Repository) Archive(ctx context.Context, id int64) (models.Book, error)
 	status := models.StatusArchived
 	return r.Update(ctx, id, models.BookPatch{Status: &status})
 }
-
-func applyStatusSideEffects(before, after *models.Book) {
-	if before.Status != models.StatusReading && after.Status == models.StatusReading && after.StartedAt == nil {
-		now := models.NowTimestamp()
-		after.StartedAt = &now
-	}
-	if after.Status == models.StatusRead && after.FinishedAt == nil {
-		now := models.NowTimestamp()
-		after.FinishedAt = &now
-	}
-}
-
 func (r *Repository) queryBooks(ctx context.Context, query string, args ...any) ([]models.Book, error) {
 	rows, err := r.db.sql.QueryContext(ctx, query, args...)
 	if err != nil {
