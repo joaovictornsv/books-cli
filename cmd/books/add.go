@@ -15,6 +15,7 @@ var (
 	addPriority       bool
 	addEligibleToSell bool
 	addNotes          string
+	addDescription    string
 )
 
 var addCmd = &cobra.Command{
@@ -47,6 +48,9 @@ var addCmd = &cobra.Command{
 		if addNotes != "" {
 			book.Notes = &addNotes
 		}
+		if addDescription != "" {
+			book.Description = &addDescription
+		}
 		if err := book.ValidateForCreate(); err != nil {
 			return err
 		}
@@ -68,5 +72,6 @@ func init() {
 	addCmd.Flags().BoolVar(&addPriority, "priority", false, "Mark as priority to buy")
 	addCmd.Flags().BoolVar(&addEligibleToSell, "eligible-to-sell", false, "Mark as eligible to sell")
 	addCmd.Flags().StringVar(&addNotes, "notes", "", "Free-form notes")
+	addCmd.Flags().StringVar(&addDescription, "description", "", "Book description (e.g. from the web)")
 	rootCmd.AddCommand(addCmd)
 }

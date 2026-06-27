@@ -17,7 +17,7 @@ var (
 
 var searchCmd = &cobra.Command{
 	Use:   "search [query]",
-	Short: "Search books by title and optional author",
+	Short: "Search books by title, description, and optional author",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		query := strings.TrimSpace(args[0])

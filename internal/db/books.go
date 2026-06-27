@@ -51,8 +51,8 @@ func (r *Repository) Create(ctx context.Context, book models.Book) (models.Book,
 	res, err := r.db.sql.ExecContext(ctx, `
 		INSERT INTO books (
 			title, author, category, status, priority_to_buy, eligible_to_sell, sold,
-			notes, added_at, started_at, finished_at
-		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+			notes, description, added_at, started_at, finished_at
+		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 		book.Title,
 		nullString(book.Author),
 		nullCategory(book.Category),
@@ -61,6 +61,7 @@ func (r *Repository) Create(ctx context.Context, book models.Book) (models.Book,
 		book.EligibleToSell,
 		book.Sold,
 		nullString(book.Notes),
+		nullString(book.Description),
 		book.AddedAt,
 		nullString(book.StartedAt),
 		nullString(book.FinishedAt),
@@ -80,7 +81,7 @@ func (r *Repository) Create(ctx context.Context, book models.Book) (models.Book,
 func (r *Repository) GetByID(ctx context.Context, id int64) (models.Book, error) {
 	row := r.db.sql.QueryRowContext(ctx, `
 		SELECT id, title, author, category, status, priority_to_buy, eligible_to_sell, sold,
-		       notes, added_at, started_at, finished_at
+		       notes, description, added_at, started_at, finished_at
 		FROM books WHERE id = ?`, id)
 
 	book, err := scanBook(row)
@@ -111,7 +112,7 @@ func (r *Repository) queryBooksPage(ctx context.Context, where string, args []an
 
 	query := `
 		SELECT id, title, author, category, status, priority_to_buy, eligible_to_sell, sold,
-		       notes, added_at, started_at, finished_at
+		       notes, description, added_at, started_at, finished_at
 		FROM books WHERE 1=1` + where + ` ORDER BY id ASC`
 
 	queryArgs := append([]any{}, args...)
@@ -159,8 +160,9 @@ func buildSearchWhere(filter SearchFilter) (string, []any) {
 		args = append(args, models.StatusArchived.String())
 	}
 	if q := strings.TrimSpace(filter.Query); q != "" {
-		query += ` AND LOWER(title) LIKE ? ESCAPE '\'`
-		args = append(args, "%"+escapeLike(strings.ToLower(q))+"%")
+		pattern := "%" + escapeLike(strings.ToLower(q)) + "%"
+		query += ` AND (LOWER(title) LIKE ? ESCAPE '\' OR LOWER(COALESCE(description, '')) LIKE ? ESCAPE '\')`
+		args = append(args, pattern, pattern)
 	}
 	if a := strings.TrimSpace(filter.Author); a != "" {
 		query += ` AND LOWER(COALESCE(author, '')) LIKE ? ESCAPE '\'`
@@ -212,6 +214,9 @@ func (r *Repository) Update(ctx context.Context, id int64, patch models.BookPatc
 	if patch.Notes != nil {
 		updated.Notes = patch.Notes
 	}
+	if patch.Description != nil {
+		updated.Description = patch.Description
+	}
 	if patch.Category != nil {
 		updated.Category = patch.Category
 	} else if patch.ClearCategory {
@@ -227,7 +232,7 @@ func (r *Repository) Update(ctx context.Context, id int64, patch models.BookPatc
 	_, err = r.db.sql.ExecContext(ctx, `
 		UPDATE books SET
 			title = ?, author = ?, category = ?, status = ?, priority_to_buy = ?, eligible_to_sell = ?,
-			sold = ?, notes = ?, started_at = ?, finished_at = ?
+			sold = ?, notes = ?, description = ?, started_at = ?, finished_at = ?
 		WHERE id = ?`,
 		updated.Title,
 		nullString(updated.Author),
@@ -237,6 +242,7 @@ func (r *Repository) Update(ctx context.Context, id int64, patch models.BookPatc
 		updated.EligibleToSell,
 		updated.Sold,
 		nullString(updated.Notes),
+		nullString(updated.Description),
 		nullString(updated.StartedAt),
 		nullString(updated.FinishedAt),
 		id,
@@ -293,7 +299,7 @@ type rowScanner interface {
 
 func scanBook(row rowScanner) (models.Book, error) {
 	var book models.Book
-	var author, category, notes, startedAt, finishedAt sql.NullString
+	var author, category, notes, description, startedAt, finishedAt sql.NullString
 	var status string
 
 	err := row.Scan(
@@ -306,6 +312,7 @@ func scanBook(row rowScanner) (models.Book, error) {
 		&book.EligibleToSell,
 		&book.Sold,
 		&notes,
+		&description,
 		&book.AddedAt,
 		&startedAt,
 		&finishedAt,
@@ -317,6 +324,7 @@ func scanBook(row rowScanner) (models.Book, error) {
 	book.Author = nullToPtr(author)
 	book.Category = nullToCategory(category)
 	book.Notes = nullToPtr(notes)
+	book.Description = nullToPtr(description)
 	book.StartedAt = nullToPtr(startedAt)
 	book.FinishedAt = nullToPtr(finishedAt)
 	book.Status = models.Status(status)

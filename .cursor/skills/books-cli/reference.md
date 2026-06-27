@@ -58,6 +58,7 @@ Nullable on existing books; agent must set on every `add`.
 | `--priority` | false | Sets `priority_to_buy = 1` |
 | `--eligible-to-sell` | false | |
 | `--notes` | empty | |
+| `--description` | empty | **Agent must set on add** — web synopsis; same language as title |
 
 ### `list`
 
@@ -73,11 +74,11 @@ Archived excluded unless `--status ARCHIVED`.
 
 ### `search [query]`
 
-Title substring (case-insensitive). Optional `--author` substring filter. Same pagination flags as `list`.
+Title or description substring (case-insensitive). Optional `--author` substring filter. Same pagination flags as `list`.
 
 ### `update [id]`
 
-At least one flag: `--title`, `--author`, `--category`, `--status`, `--notes`, `--priority`, `--eligible-to-sell`, `--sold`.
+At least one flag: `--title`, `--author`, `--category`, `--status`, `--notes`, `--description`, `--priority`, `--eligible-to-sell`, `--sold`.
 
 Pass `--category ""` to clear an existing category.
 
@@ -100,6 +101,7 @@ No extra flags beyond global `--json`.
   "eligible_to_sell": 0,
   "sold": 0,
   "notes": "",
+  "description": "Epic science fiction saga set on Arrakis.",
   "added_at": "2024-01-01T00:00:00Z",
   "started_at": null,
   "finished_at": null

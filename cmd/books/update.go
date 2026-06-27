@@ -15,6 +15,7 @@ var (
 	updateCategory       string
 	updateStatus         string
 	updateNotes          string
+	updateDescription    string
 	updatePriority       bool
 	updateEligibleToSell bool
 	updateSold           bool
@@ -64,6 +65,9 @@ var updateCmd = &cobra.Command{
 		if flags.Changed("notes") {
 			patch.Notes = &updateNotes
 		}
+		if flags.Changed("description") {
+			patch.Description = &updateDescription
+		}
 		if flags.Changed("priority") {
 			v := models.ToBool01(updatePriority)
 			patch.PriorityToBuy = &v
@@ -79,7 +83,7 @@ var updateCmd = &cobra.Command{
 
 		if patch.Title == nil && patch.Author == nil && !patch.ClearAuthor &&
 			patch.Category == nil && !patch.ClearCategory && patch.Status == nil &&
-			patch.Notes == nil && patch.PriorityToBuy == nil &&
+			patch.Notes == nil && patch.Description == nil && patch.PriorityToBuy == nil &&
 			patch.EligibleToSell == nil && patch.Sold == nil {
 			return fmt.Errorf("no fields to update: pass at least one flag")
 		}
@@ -100,6 +104,7 @@ func init() {
 	updateCmd.Flags().StringVar(&updateCategory, "category", "", "New category")
 	updateCmd.Flags().StringVar(&updateStatus, "status", "", "New status")
 	updateCmd.Flags().StringVar(&updateNotes, "notes", "", "New notes")
+	updateCmd.Flags().StringVar(&updateDescription, "description", "", "New description")
 	updateCmd.Flags().BoolVar(&updatePriority, "priority", false, "Set priority to buy")
 	updateCmd.Flags().BoolVar(&updateEligibleToSell, "eligible-to-sell", false, "Set eligible to sell")
 	updateCmd.Flags().BoolVar(&updateSold, "sold", false, "Mark as sold")

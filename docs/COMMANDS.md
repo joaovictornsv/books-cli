@@ -60,6 +60,7 @@ books add "Dune" --author "Frank Herbert" --status NOT_STARTED
 | `--priority` | `false` | Set `priority_to_buy` to `1` |
 | `--eligible-to-sell` | `false` | Set `eligible_to_sell` to `1` |
 | `--notes` | _(empty)_ | Free-form notes |
+| `--description` | _(empty)_ | Book description (e.g. from the web) |
 
 ### JSON output
 
@@ -136,7 +137,7 @@ With pagination:
 
 ## `search`
 
-Search books by title substring (case-insensitive). Optionally filter by author substring.
+Search books by title or description substring (case-insensitive). Optionally filter by author substring.
 
 ```bash
 books search "le guin"
@@ -149,7 +150,7 @@ books search "dune" --author "herbert" --json
 
 | Argument | Description |
 | --- | --- |
-| `query` | Substring to match against title |
+| `query` | Substring to match against title or description |
 
 ### Flags
 
@@ -173,6 +174,7 @@ Update one or more fields on an existing book. Only flags you pass are changed.
 books update 42 --status READ
 books update 42 --status TO_BUY --priority --eligible-to-sell
 books update 42 --notes "Borrowed from library"
+books update 42 --description "Epic science fiction saga set on Arrakis."
 books update 42 --title "Dune" --author "Frank Herbert"
 ```
 
@@ -190,6 +192,7 @@ books update 42 --title "Dune" --author "Frank Herbert"
 | `--author` | New author |
 | `--status` | New status |
 | `--notes` | New notes |
+| `--description` | New description |
 | `--priority` | Set `priority_to_buy` (`true` → `1`, `false` → `0`) |
 | `--eligible-to-sell` | Set `eligible_to_sell` |
 | `--sold` | Set `sold` |

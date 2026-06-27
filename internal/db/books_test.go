@@ -115,6 +115,39 @@ func TestRepositorySearch(t *testing.T) {
 	}
 }
 
+func TestRepositorySearchDescription(t *testing.T) {
+	database, err := OpenMemory()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer database.Close()
+
+	repo := NewRepository(database)
+	ctx := context.Background()
+	description := "Epic science fiction saga set on the desert planet Arrakis"
+
+	_, err = repo.Create(ctx, models.Book{
+		Title:          "Dune",
+		Description:    &description,
+		Status:         models.StatusNotStarted,
+		PriorityToBuy:  0,
+		EligibleToSell: 0,
+		Sold:           0,
+		AddedAt:        models.NowTimestamp(),
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	results, err := repo.Search(ctx, SearchFilter{Query: "arrakis"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(results.Books) != 1 {
+		t.Fatalf("expected 1 result searching description, got %d", len(results.Books))
+	}
+}
+
 func TestRepositoryListFilters(t *testing.T) {
 	database, err := OpenMemory()
 	if err != nil {

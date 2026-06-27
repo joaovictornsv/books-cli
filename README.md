@@ -34,6 +34,7 @@ Initial `books` table:
 | `eligible_to_sell` | `INTEGER NOT NULL DEFAULT 0` | Boolean (`0` or `1`) |
 | `sold` | `INTEGER NOT NULL DEFAULT 0` | Boolean (`0` or `1`); whether the book was sold |
 | `notes` | `TEXT` | Free-form notes |
+| `description` | `TEXT` | Optional book description (searchable) |
 | `added_at` | `TEXT NOT NULL` | ISO 8601 timestamp |
 | `started_at` | `TEXT` | ISO 8601 timestamp; set when reading begins |
 | `finished_at` | `TEXT` | ISO 8601 timestamp; set when marked `READ` |

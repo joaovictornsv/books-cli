@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `description` column on books (optional text, searchable via `search`)
 - `delete` command to permanently remove a book from the database
 - SQLite-backed `books` table with embedded migrations and schema validation
 - Commands: `add`, `get`, `list`, `search`, `update`, `archive`, `delete`, `config`

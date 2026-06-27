@@ -16,6 +16,7 @@ type Book struct {
 	EligibleToSell  int     `json:"eligible_to_sell"`
 	Sold            int     `json:"sold"`
 	Notes           *string `json:"notes,omitempty"`
+	Description     *string `json:"description,omitempty"`
 	AddedAt         string  `json:"added_at"`
 	StartedAt       *string `json:"started_at,omitempty"`
 	FinishedAt      *string `json:"finished_at,omitempty"`
@@ -32,6 +33,7 @@ type BookPatch struct {
 	EligibleToSell *int
 	Sold           *int
 	Notes          *string
+	Description    *string
 }
 
 func ToBool01(v bool) int {
