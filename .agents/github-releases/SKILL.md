@@ -24,23 +24,37 @@ Simple release workflow for this project: semver tag, changelog notes, and a Lin
    - Leave an empty `[Unreleased]` section at the top.
 3. Commit the changelog update (message e.g. `chore: release v0.1.0`).
 
+## Tag the release
+
+Tag the changelog commit **before** pushing or publishing the GitHub release:
+
+```bash
+VERSION=v0.1.0
+
+git tag -a "$VERSION" -m "$VERSION"
+```
+
+Verify the tag points at the right commit: `git show "$VERSION" --no-patch`.
+
 ## Create the release
 
 ```bash
 VERSION=v0.1.0
 ASSET=books-linux-amd64
 
-# Build release binary (linux/amd64)
-GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o "$ASSET" ./cmd/books
-
-# Tag the current commit
-git tag -a "$VERSION" -m "$VERSION"
+# Push commit and tag
+git push origin main
 git push origin "$VERSION"
+
+# Build release binary (linux/amd64) from the tagged commit
+GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o "$ASSET" ./cmd/books
 
 # Create GitHub release with binary attached
 gh release create "$VERSION" \
   --title "$VERSION" \
-  --notes "$(awk -v v="${VERSION#v}" '/^## \['v'\]/{flag=1; next} /^## \[/{flag=0} flag' CHANGELOG.md)" \
+  --notes "$(awk -v v="${VERSION#v}" '/^## \['v'\]/{flag=1; next} /^## \[/{flag=0} flag' CHANGELOG.md)
+
+See CHANGELOG.md for details." \
   "$ASSET"
 
 rm -f "$ASSET"
@@ -60,6 +74,7 @@ Keep notes short:
 ## Checklist
 
 - [ ] CHANGELOG updated for this version
+- [ ] Annotated tag created locally (`git tag -a vX.Y.Z -m vX.Y.Z`)
+- [ ] Commit and tag pushed to `origin`
 - [ ] `books-linux-amd64` built from the tagged commit
-- [ ] Tag pushed to `origin`
 - [ ] GitHub release created with matching notes and binary uploaded
