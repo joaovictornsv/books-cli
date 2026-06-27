@@ -15,4 +15,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Human-readable table output and `--json` for scripting
 - Configurable database path via `BOOKS_DB`, `~/.config/books/config.toml`, or default path
 - Command reference in `docs/COMMANDS.md`
+- Pagination for `list` and `search` (`--page`, `--limit`)
 - GitHub Actions CI (test and build on push/PR)

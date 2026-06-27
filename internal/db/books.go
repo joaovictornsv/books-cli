@@ -13,16 +13,23 @@ import (
 var ErrNotFound = errors.New("book not found")
 
 type ListFilter struct {
-	Status         *models.Status
-	PriorityToBuy  *bool
-	EligibleToSell *bool
+	Status          *models.Status
+	PriorityToBuy   *bool
+	EligibleToSell  *bool
 	IncludeArchived bool
+	Pagination      *models.Pagination
 }
 
 type SearchFilter struct {
-	Query          string
-	Author         string
+	Query           string
+	Author          string
 	IncludeArchived bool
+	Pagination      *models.Pagination
+}
+
+type BooksResult struct {
+	Books []models.Book
+	Total int
 }
 
 type Repository struct {
@@ -85,11 +92,60 @@ func (r *Repository) GetByID(ctx context.Context, id int64) (models.Book, error)
 	return book, nil
 }
 
-func (r *Repository) List(ctx context.Context, filter ListFilter) ([]models.Book, error) {
+func (r *Repository) List(ctx context.Context, filter ListFilter) (BooksResult, error) {
+	where, args := buildListWhere(filter)
+
+	total, err := r.countBooks(ctx, where, args)
+	if err != nil {
+		return BooksResult{}, err
+	}
+
 	query := `
 		SELECT id, title, author, status, priority_to_buy, eligible_to_sell, sold,
 		       notes, added_at, started_at, finished_at
-		FROM books WHERE 1=1`
+		FROM books WHERE 1=1` + where + ` ORDER BY id ASC`
+
+	queryArgs := append([]any{}, args...)
+	if filter.Pagination != nil && filter.Pagination.Enabled() {
+		query += ` LIMIT ? OFFSET ?`
+		queryArgs = append(queryArgs, filter.Pagination.Limit, filter.Pagination.Offset())
+	}
+
+	books, err := r.queryBooks(ctx, query, queryArgs...)
+	if err != nil {
+		return BooksResult{}, err
+	}
+	return BooksResult{Books: books, Total: total}, nil
+}
+
+func (r *Repository) Search(ctx context.Context, filter SearchFilter) (BooksResult, error) {
+	where, args := buildSearchWhere(filter)
+
+	total, err := r.countBooks(ctx, where, args)
+	if err != nil {
+		return BooksResult{}, err
+	}
+
+	query := `
+		SELECT id, title, author, status, priority_to_buy, eligible_to_sell, sold,
+		       notes, added_at, started_at, finished_at
+		FROM books WHERE 1=1` + where + ` ORDER BY id ASC`
+
+	queryArgs := append([]any{}, args...)
+	if filter.Pagination != nil && filter.Pagination.Enabled() {
+		query += ` LIMIT ? OFFSET ?`
+		queryArgs = append(queryArgs, filter.Pagination.Limit, filter.Pagination.Offset())
+	}
+
+	books, err := r.queryBooks(ctx, query, queryArgs...)
+	if err != nil {
+		return BooksResult{}, err
+	}
+	return BooksResult{Books: books, Total: total}, nil
+}
+
+func buildListWhere(filter ListFilter) (string, []any) {
+	query := ""
 	args := []any{}
 
 	if !filter.IncludeArchived {
@@ -108,16 +164,11 @@ func (r *Repository) List(ctx context.Context, filter ListFilter) ([]models.Book
 		query += ` AND eligible_to_sell = ?`
 		args = append(args, models.ToBool01(*filter.EligibleToSell))
 	}
-	query += ` ORDER BY id ASC`
-
-	return r.queryBooks(ctx, query, args...)
+	return query, args
 }
 
-func (r *Repository) Search(ctx context.Context, filter SearchFilter) ([]models.Book, error) {
-	query := `
-		SELECT id, title, author, status, priority_to_buy, eligible_to_sell, sold,
-		       notes, added_at, started_at, finished_at
-		FROM books WHERE 1=1`
+func buildSearchWhere(filter SearchFilter) (string, []any) {
+	query := ""
 	args := []any{}
 
 	if !filter.IncludeArchived {
@@ -132,9 +183,16 @@ func (r *Repository) Search(ctx context.Context, filter SearchFilter) ([]models.
 		query += ` AND LOWER(COALESCE(author, '')) LIKE ? ESCAPE '\'`
 		args = append(args, "%"+escapeLike(strings.ToLower(a))+"%")
 	}
-	query += ` ORDER BY id ASC`
+	return query, args
+}
 
-	return r.queryBooks(ctx, query, args...)
+func (r *Repository) countBooks(ctx context.Context, where string, args []any) (int, error) {
+	var total int
+	err := r.db.sql.QueryRowContext(ctx, `SELECT COUNT(1) FROM books WHERE 1=1`+where, args...).Scan(&total)
+	if err != nil {
+		return 0, fmt.Errorf("count books: %w", err)
+	}
+	return total, nil
 }
 
 func (r *Repository) Update(ctx context.Context, id int64, patch models.BookPatch) (models.Book, error) {

@@ -7,7 +7,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var searchAuthor string
+var (
+	searchAuthor string
+	searchPage   int
+	searchLimit  int
+)
 
 var searchCmd = &cobra.Command{
 	Use:   "search [query]",
@@ -19,17 +23,24 @@ var searchCmd = &cobra.Command{
 			Author: searchAuthor,
 		}
 
+		pagination, err := paginationFromFlags(cmd, &searchPage, &searchLimit)
+		if err != nil {
+			return err
+		}
+		filter.Pagination = pagination
+
 		return runWithRepo(func(ctx context.Context, repo *db.Repository) error {
-			books, err := repo.Search(ctx, filter)
+			result, err := repo.Search(ctx, filter)
 			if err != nil {
 				return err
 			}
-			return formatter().PrintBooks(cmd.OutOrStdout(), books)
+			return printBooksResult(cmd, result, pagination)
 		})
 	},
 }
 
 func init() {
 	searchCmd.Flags().StringVar(&searchAuthor, "author", "", "Filter by author substring")
+	addPaginationFlags(searchCmd, &searchPage, &searchLimit)
 	rootCmd.AddCommand(searchCmd)
 }

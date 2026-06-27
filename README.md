@@ -186,12 +186,12 @@ books-cli/
 - [ ] `docs/COMMANDS.md`
 - [ ] CI (test + build on push/PR)
 - [ ] `CHANGELOG.md` maintained per release
+- [ ] Pagination for `list` and `search`
 
 ### v0.2
 
 - [ ] `stats`
 - [ ] `backup`
-- [ ] Pagination for `list` and `search`
 
 ## Development
 

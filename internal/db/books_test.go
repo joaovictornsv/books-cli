@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/joaovictornsv/books-cli/internal/models"
@@ -68,8 +69,8 @@ func TestRepositoryCRUD(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(books) != 0 {
-		t.Fatalf("expected archived book hidden, got %d books", len(books))
+	if len(books.Books) != 0 {
+		t.Fatalf("expected archived book hidden, got %d books", len(books.Books))
 	}
 }
 
@@ -101,16 +102,16 @@ func TestRepositorySearch(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(results) != 1 {
-		t.Fatalf("expected 1 result, got %d", len(results))
+	if len(results.Books) != 1 {
+		t.Fatalf("expected 1 result, got %d", len(results.Books))
 	}
 
 	results, err = repo.Search(ctx, SearchFilter{Query: "dune", Author: "herbert"})
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(results) != 1 {
-		t.Fatalf("expected 1 result with author filter, got %d", len(results))
+	if len(results.Books) != 1 {
+		t.Fatalf("expected 1 result with author filter, got %d", len(results.Books))
 	}
 }
 
@@ -142,8 +143,8 @@ func TestRepositoryListFilters(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(books) != 1 {
-		t.Fatalf("expected 1 book, got %d", len(books))
+	if len(books.Books) != 1 {
+		t.Fatalf("expected 1 book, got %d", len(books.Books))
 	}
 }
 
@@ -170,5 +171,45 @@ func TestMigrationsIdempotent(t *testing.T) {
 
 	if err := migrate(database.SQL()); err != nil {
 		t.Fatal(err)
+	}
+}
+
+func TestRepositoryPagination(t *testing.T) {
+	database, err := OpenMemory()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer database.Close()
+
+	repo := NewRepository(database)
+	ctx := context.Background()
+
+	for i := 1; i <= 5; i++ {
+		_, err := repo.Create(ctx, models.Book{
+			Title:          fmt.Sprintf("Book %d", i),
+			Status:         models.StatusNotStarted,
+			PriorityToBuy:  0,
+			EligibleToSell: 0,
+			Sold:           0,
+			AddedAt:        models.NowTimestamp(),
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	page2 := models.Pagination{Page: 2, Limit: 2}
+	result, err := repo.List(ctx, ListFilter{Pagination: &page2})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if result.Total != 5 {
+		t.Fatalf("expected total 5, got %d", result.Total)
+	}
+	if len(result.Books) != 2 {
+		t.Fatalf("expected 2 books on page 2, got %d", len(result.Books))
+	}
+	if result.Books[0].Title != "Book 3" {
+		t.Fatalf("expected Book 3 first on page 2, got %q", result.Books[0].Title)
 	}
 }

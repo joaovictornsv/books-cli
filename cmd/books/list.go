@@ -12,6 +12,8 @@ var (
 	listStatus         string
 	listPriority       bool
 	listEligibleToSell bool
+	listPage           int
+	listLimit          int
 )
 
 var listCmd = &cobra.Command{
@@ -34,12 +36,18 @@ var listCmd = &cobra.Command{
 			filter.EligibleToSell = &listEligibleToSell
 		}
 
+		pagination, err := paginationFromFlags(cmd, &listPage, &listLimit)
+		if err != nil {
+			return err
+		}
+		filter.Pagination = pagination
+
 		return runWithRepo(func(ctx context.Context, repo *db.Repository) error {
-			books, err := repo.List(ctx, filter)
+			result, err := repo.List(ctx, filter)
 			if err != nil {
 				return err
 			}
-			return formatter().PrintBooks(cmd.OutOrStdout(), books)
+			return printBooksResult(cmd, result, pagination)
 		})
 	},
 }
@@ -48,5 +56,6 @@ func init() {
 	listCmd.Flags().StringVar(&listStatus, "status", "", "Filter by status")
 	listCmd.Flags().BoolVar(&listPriority, "priority", false, "Only priority-to-buy books")
 	listCmd.Flags().BoolVar(&listEligibleToSell, "eligible-to-sell", false, "Only eligible-to-sell books")
+	addPaginationFlags(listCmd, &listPage, &listLimit)
 	rootCmd.AddCommand(listCmd)
 }

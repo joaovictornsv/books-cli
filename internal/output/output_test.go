@@ -29,11 +29,25 @@ func TestJSONFormatter(t *testing.T) {
 	}
 
 	buf.Reset()
-	if err := formatter.PrintBooks(&buf, []models.Book{book}); err != nil {
+	if err := formatter.PrintBooks(&buf, BooksPage{Books: []models.Book{book}, Total: 1}); err != nil {
 		t.Fatal(err)
 	}
 	if !strings.Contains(buf.String(), `"total": 1`) {
 		t.Fatalf("unexpected json: %s", buf.String())
+	}
+
+	buf.Reset()
+	page := 1
+	limit := 10
+	if err := formatter.PrintBooks(&buf, BooksPage{
+		Books:      []models.Book{book},
+		Total:      25,
+		Pagination: &models.Pagination{Page: page, Limit: limit},
+	}); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(buf.String(), `"page": 1`) || !strings.Contains(buf.String(), `"limit": 10`) {
+		t.Fatalf("unexpected paginated json: %s", buf.String())
 	}
 }
 

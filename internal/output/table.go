@@ -13,21 +13,33 @@ import (
 type TableFormatter struct{}
 
 func (TableFormatter) PrintBook(w io.Writer, book models.Book) error {
-	return printBooksTable(w, []models.Book{book})
+	return printBooksTable(w, BooksPage{Books: []models.Book{book}, Total: 1})
 }
 
-func (TableFormatter) PrintBooks(w io.Writer, books []models.Book) error {
-	return printBooksTable(w, books)
+func (TableFormatter) PrintBooks(w io.Writer, page BooksPage) error {
+	if err := printBooksTable(w, page); err != nil {
+		return err
+	}
+	if page.Pagination != nil {
+		totalPages := (page.Total + page.Pagination.Limit - 1) / page.Pagination.Limit
+		if totalPages < 1 {
+			totalPages = 1
+		}
+		_, err := fmt.Fprintf(w, "\npage %d of %d (%d total)\n",
+			page.Pagination.Page, totalPages, page.Total)
+		return err
+	}
+	return nil
 }
 
 func (TableFormatter) PrintConfig(w io.Writer, cfg config.Config) error {
 	return PrintConfigHuman(w, cfg)
 }
 
-func printBooksTable(w io.Writer, books []models.Book) error {
+func printBooksTable(w io.Writer, page BooksPage) error {
 	tw := tabwriter.NewWriter(w, 0, 0, 2, ' ', 0)
 	_, _ = fmt.Fprintln(tw, "ID\tTITLE\tAUTHOR\tSTATUS\tPRIORITY\tSELL\tSOLD\tADDED")
-	for _, book := range books {
+	for _, book := range page.Books {
 		_, err := fmt.Fprintf(tw, "%d\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n",
 			book.ID,
 			book.Title,

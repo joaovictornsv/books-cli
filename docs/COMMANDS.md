@@ -94,18 +94,25 @@ books list
 books list --status READING
 books list --status TO_BUY --priority
 books list --eligible-to-sell
+books list --page 2 --limit 20
 books list --json
 ```
 
 ### Flags
 
-| Flag | Description |
-| --- | --- |
-| `--status` | Filter by status |
-| `--priority` | Only books with `priority_to_buy = 1` |
-| `--eligible-to-sell` | Only books with `eligible_to_sell = 1` |
+| Flag | Default | Description |
+| --- | --- | --- |
+| `--status` | _(none)_ | Filter by status |
+| `--priority` | `false` | Only books with `priority_to_buy = 1` |
+| `--eligible-to-sell` | `false` | Only books with `eligible_to_sell = 1` |
+| `--page` | `1` | Page number (1-based); used with `--limit` |
+| `--limit` | `20` | Results per page; used with `--page` |
+
+Pagination applies when either `--page` or `--limit` is passed. If only one is set, the other defaults to `page=1` or `limit=20`.
 
 ### JSON output
+
+Without pagination:
 
 ```json
 {
@@ -114,9 +121,18 @@ books list --json
 }
 ```
 
-### Planned for v0.2
+With pagination:
 
-- `--page` and `--limit` pagination
+```json
+{
+  "books": [ ... ],
+  "total": 45,
+  "page": 2,
+  "limit": 20
+}
+```
+
+`total` is the full match count across all pages.
 
 ## `search`
 
@@ -125,6 +141,7 @@ Search books by title substring (case-insensitive). Optionally filter by author 
 ```bash
 books search "le guin"
 books search "dune" --author "herbert"
+books search "dune" --author "herbert" --page 1 --limit 10
 books search "dune" --author "herbert" --json
 ```
 
@@ -136,19 +153,17 @@ books search "dune" --author "herbert" --json
 
 ### Flags
 
-| Flag | Description |
-| --- | --- |
-| `--author` | Substring to match against author (case-insensitive) |
+| Flag | Default | Description |
+| --- | --- | --- |
+| `--author` | _(none)_ | Substring to match against author (case-insensitive) |
+| `--page` | `1` | Page number (1-based); used with `--limit` |
+| `--limit` | `20` | Results per page; used with `--page` |
 
 Archived books are excluded from results.
 
 ### JSON output
 
-Same shape as `list`.
-
-### Planned for v0.2
-
-- `--page` and `--limit` pagination
+Same shape as `list` (including optional `page` and `limit` when paginating).
 
 ## `update`
 

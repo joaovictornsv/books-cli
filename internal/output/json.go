@@ -14,6 +14,8 @@ type JSONFormatter struct{}
 type booksResponse struct {
 	Books []models.Book `json:"books"`
 	Total int           `json:"total"`
+	Page  *int          `json:"page,omitempty"`
+	Limit *int          `json:"limit,omitempty"`
 }
 
 func (JSONFormatter) PrintBook(w io.Writer, book models.Book) error {
@@ -22,13 +24,24 @@ func (JSONFormatter) PrintBook(w io.Writer, book models.Book) error {
 	return enc.Encode(book)
 }
 
-func (JSONFormatter) PrintBooks(w io.Writer, books []models.Book) error {
+func (JSONFormatter) PrintBooks(w io.Writer, page BooksPage) error {
+	books := page.Books
 	if books == nil {
 		books = []models.Book{}
 	}
+
+	resp := booksResponse{
+		Books: books,
+		Total: page.Total,
+	}
+	if page.Pagination != nil {
+		resp.Page = &page.Pagination.Page
+		resp.Limit = &page.Pagination.Limit
+	}
+
 	enc := json.NewEncoder(w)
 	enc.SetIndent("", "  ")
-	return enc.Encode(booksResponse{Books: books, Total: len(books)})
+	return enc.Encode(resp)
 }
 
 func (JSONFormatter) PrintConfig(w io.Writer, cfg config.Config) error {

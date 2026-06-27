@@ -7,9 +7,15 @@ import (
 	"github.com/joaovictornsv/books-cli/internal/models"
 )
 
+type BooksPage struct {
+	Books      []models.Book
+	Total      int
+	Pagination *models.Pagination
+}
+
 type Formatter interface {
 	PrintBook(w io.Writer, book models.Book) error
-	PrintBooks(w io.Writer, books []models.Book) error
+	PrintBooks(w io.Writer, page BooksPage) error
 	PrintConfig(w io.Writer, cfg config.Config) error
 }
 
