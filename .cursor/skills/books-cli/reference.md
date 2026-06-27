@@ -76,7 +76,23 @@ Archived excluded unless `--status ARCHIVED`.
 
 Title or description substring (case-insensitive). Optional `--author` substring filter. Same pagination flags as `list`.
 
-**Bilingual collection:** titles and descriptions may be in **pt-BR or English**. Search is literal substring match — it does not translate. When looking up a known book or topic, run separate queries for each language variant (e.g. `"hobbit"` and `"o hobbit"`) and merge by `id`. See [SKILL.md](SKILL.md#bilingual-search-pt-br-and-english).
+| Flag | Default | Notes |
+| --- | --- | --- |
+| `query` (positional) | none | Optional; substring match on title or description |
+| `--term` | none | Repeatable; each value is OR'd with other terms |
+| `--author` | none | AND filter on author substring |
+| `--page` | 1 | |
+| `--limit` | 20 (max 100) | |
+
+**At least one** positional `query` or `--term` is required. Positional query and `--term` can be combined — all terms are OR'd. Within each term, a book matches if the substring appears in **title or description**.
+
+```bash
+books search "dune"
+books search --term hobbit --term "o hobbit"
+books search "senhor" --term lord --author "tolkien"
+```
+
+**Bilingual collection:** titles and descriptions may be in **pt-BR or English**. Search is literal substring match — it does not translate. For alternate-language variants, use one command with multiple `--term` flags (e.g. `--term hobbit --term "o hobbit"`) instead of separate searches. See [SKILL.md](SKILL.md#bilingual-search-pt-br-and-english).
 
 ### `update [id]`
 

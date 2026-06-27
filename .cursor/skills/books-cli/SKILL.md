@@ -144,17 +144,29 @@ On failure, show stderr and suggest a fix (duplicate title is not enforced — f
 
 Pagination is **always active** (default `page=1`, `limit=20`, max `limit=100`). Handle it explicitly — never assume one page is the full result set.
 
-The collection stores **titles and descriptions in both Brazilian Portuguese and English** (e.g. `Dune` with an English synopsis vs `O Hobbit` with a pt-BR synopsis). Search matches substrings in either field — a query in one language will not find a book whose title or description is only in the other.
+The collection stores **titles and descriptions in both Brazilian Portuguese and English** (e.g. `Dune` with an English synopsis vs `O Hobbit` with a pt-BR synopsis). Search matches substrings in title or description (case-insensitive). A single language in the query will not match text that exists only in the other language — use multiple `--term` flags for OR across variants.
 
 See [reference.md](reference.md) for flags and [examples.md](examples.md) for phrase → command mapping.
+
+### Search terms (`--term` OR)
+
+`search` accepts an optional positional query and/or repeatable `--term` flags. **At least one non-empty term is required.**
+
+| Input | Behavior |
+| --- | --- |
+| `books search "dune"` | One term (positional) |
+| `books search --term hobbit --term "o hobbit"` | Two terms, OR'd |
+| `books search "senhor" --term lord` | Positional + flag, all OR'd |
+
+Each term matches if it appears in **title or description**. `--author` is an additional AND filter on author substring. Multiple terms share one paginated result set with a correct `total` — prefer this over multiple `search` calls when variants share the same author filter.
 
 ### Bilingual search (pt-BR and English)
 
 When **searching** — including duplicate checks before `add` — consider **both languages**:
 
 1. **Derive variants** from the user's request: alternate edition titles (`The Hobbit` / `O Hobbit`), translated keywords (`senhor` / `lord`, `guerra` / `war`), or the language the user did *not* use when the book is commonly known in both.
-2. **Run separate `search` queries** for each meaningful variant (author filter can stay the same). One language per query is enough — do not concatenate both into a single query.
-3. **Merge results by `id`** across queries and pages before answering. Do not treat an empty first query as "no matches" until you have tried the other language when a plausible variant exists.
+2. **Pass all meaningful variants in one search** using repeatable `--term` flags (OR logic). A positional query and `--term` can be combined. Example: `books search --term hobbit --term "o hobbit" --json`.
+3. **Merge results by `id`** only when you must run separate queries (e.g. different `--author` filters). With a single `--author`, one multi-`--term` search is enough.
 4. **Author names** are usually language-agnostic — a single `--author` filter is fine; still try both title/description keywords when the title alone misses.
 5. **Descriptions** are searchable too — a pt-BR title may still match an English keyword in its synopsis (or vice versa), but do not rely on that; prefer explicit bilingual title/keyword variants.
 
@@ -162,9 +174,9 @@ When **searching** — including duplicate checks before `add` — consider **bo
 
 ### Workflow
 
-1. Run the query with `--json` (and alternate-language `search` queries when applicable — see above).
+1. Run one `search` with `--json`, passing all language/title variants as `--term` flags when needed (see [Bilingual search](#bilingual-search-pt-br-and-english)).
 2. Read `total`, `page`, `limit`, and `books` from the response.
-3. If **all** relevant queries return `total == 0`, say no matches.
+3. If `total == 0`, say no matches (after including plausible bilingual `--term` variants).
 4. If `total <= limit`, show all results.
 5. If `total > limit`:
    - Show the current page in a table.
@@ -175,7 +187,7 @@ When **searching** — including duplicate checks before `add` — consider **bo
 
 ```bash
 books list [--status STATUS] [--priority] [--eligible-to-sell] --page 1 --limit 20 --json
-books search "<query>" [--author "<author>"] --page 1 --limit 20 --json
+books search [--term "<term>" ...] ["<query>"] [--author "<author>"] --page 1 --limit 20 --json
 ```
 
 ### List/search table format
@@ -218,5 +230,5 @@ Boolean columns: `priority_to_buy` / `eligible_to_sell` / `sold` → `Y` or `-`.
 ## Error handling
 
 - Exit code `0` = success; `1` = validation, not found, or DB error.
-- Parse stderr for invalid status, invalid category, bad page/limit, missing update flags, or unknown ID.
+- Parse stderr for invalid status, invalid category, bad page/limit, missing update flags, unknown ID, or missing search terms (`at least one search term is required`).
 - If `books` is missing, run `go install ./cmd/books` from the repo root; if that fails, try `go build -o books ./cmd/books` and use `./books`.

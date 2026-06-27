@@ -85,6 +85,7 @@ books list --eligible-to-sell
 books list --page 2 --limit 20
 
 books search "le guin"
+books search --term hobbit --term "o hobbit"
 books search "dune" --author "herbert" --page 1 --limit 10
 
 books update 42 --status READ

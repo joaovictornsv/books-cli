@@ -18,8 +18,38 @@ func TestSearchRejectsWhitespaceQuery(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error for whitespace-only search query")
 	}
-	if !strings.Contains(err.Error(), "search query cannot be empty") {
+	if !strings.Contains(err.Error(), "at least one search term is required") {
 		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
+func TestSearchRejectsNoTerms(t *testing.T) {
+	var buf bytes.Buffer
+	rootCmd.SetOut(&buf)
+	rootCmd.SetErr(&buf)
+	rootCmd.SetArgs([]string{"search"})
+
+	err := rootCmd.Execute()
+	if err == nil {
+		t.Fatal("expected error when no search terms provided")
+	}
+	if !strings.Contains(err.Error(), "at least one search term is required") {
+		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
+func TestCollectSearchTerms(t *testing.T) {
+	terms, err := collectSearchTerms([]string{"dune"}, []string{"hobbit", "  "})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(terms) != 2 || terms[0] != "dune" || terms[1] != "hobbit" {
+		t.Fatalf("unexpected terms: %v", terms)
+	}
+
+	_, err = collectSearchTerms(nil, []string{"  "})
+	if err == nil {
+		t.Fatal("expected error for empty terms")
 	}
 }
 

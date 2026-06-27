@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Repeatable `--term` on `search` for OR matching across title/description (positional query still supported)
 - `description` column on books (optional text, searchable via `search`)
 - `delete` command to permanently remove a book from the database
 - SQLite-backed `books` table with embedded migrations and schema validation

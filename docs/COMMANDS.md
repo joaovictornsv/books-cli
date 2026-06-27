@@ -145,10 +145,13 @@ With `--fields`, each item in `books` contains only the requested keys (in the o
 
 Search books by title or description substring (case-insensitive). Optionally filter by author substring.
 
+Pass a positional `query` and/or repeatable `--term` flags. Multiple terms are OR'd — a book matches if any term appears in title or description.
+
 ```bash
 books search "le guin"
+books search --term hobbit --term "o hobbit"
 books search "dune" --author "herbert"
-books search "dune" --author "herbert" --page 1 --limit 10
+books search --term senhor --term lord --author "tolkien" --page 1 --limit 10
 books search "dune" --author "herbert" --json
 books search "dune" --json --fields id,title,author
 ```
@@ -157,12 +160,13 @@ books search "dune" --json --fields id,title,author
 
 | Argument | Description |
 | --- | --- |
-| `query` | Substring to match against title or description |
+| `query` | Optional substring to match against title or description |
 
 ### Flags
 
 | Flag | Default | Description |
 | --- | --- | --- |
+| `--term` | _(none)_ | Search term substring (repeatable; terms are OR'd across title/description) |
 | `--author` | _(none)_ | Substring to match against author (case-insensitive) |
 | `--page` | `1` | Page number (1-based); used with `--limit` |
 | `--limit` | `20` | Results per page; used with `--page` |

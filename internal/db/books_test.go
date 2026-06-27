@@ -98,7 +98,7 @@ func TestRepositorySearch(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	results, err := repo.Search(ctx, SearchFilter{Query: "dune"})
+	results, err := repo.Search(ctx, SearchFilter{Terms: []string{"dune"}})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -106,7 +106,7 @@ func TestRepositorySearch(t *testing.T) {
 		t.Fatalf("expected 1 result, got %d", len(results.Books))
 	}
 
-	results, err = repo.Search(ctx, SearchFilter{Query: "dune", Author: "herbert"})
+	results, err = repo.Search(ctx, SearchFilter{Terms: []string{"dune"}, Author: "herbert"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -139,12 +139,53 @@ func TestRepositorySearchDescription(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	results, err := repo.Search(ctx, SearchFilter{Query: "arrakis"})
+	results, err := repo.Search(ctx, SearchFilter{Terms: []string{"arrakis"}})
 	if err != nil {
 		t.Fatal(err)
 	}
 	if len(results.Books) != 1 {
 		t.Fatalf("expected 1 result searching description, got %d", len(results.Books))
+	}
+}
+
+func TestRepositorySearchMultipleTerms(t *testing.T) {
+	database, err := OpenMemory()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer database.Close()
+
+	repo := NewRepository(database)
+	ctx := context.Background()
+
+	for _, title := range []string{"Dune", "The Hobbit"} {
+		_, err = repo.Create(ctx, models.Book{
+			Title:          title,
+			Status:         models.StatusNotStarted,
+			PriorityToBuy:  0,
+			EligibleToSell: 0,
+			Sold:           0,
+			AddedAt:        models.NowTimestamp(),
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	results, err := repo.Search(ctx, SearchFilter{Terms: []string{"dune", "hobbit"}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(results.Books) != 2 {
+		t.Fatalf("expected 2 results for OR search, got %d", len(results.Books))
+	}
+
+	results, err = repo.Search(ctx, SearchFilter{Terms: []string{"dune", "nonexistent"}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(results.Books) != 1 {
+		t.Fatalf("expected 1 result when only one term matches, got %d", len(results.Books))
 	}
 }
 

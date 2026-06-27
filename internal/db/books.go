@@ -21,7 +21,7 @@ type ListFilter struct {
 }
 
 type SearchFilter struct {
-	Query           string
+	Terms           []string
 	Author          string
 	IncludeArchived bool
 	Pagination      *models.Pagination
@@ -159,10 +159,14 @@ func buildSearchWhere(filter SearchFilter) (string, []any) {
 		query += ` AND status != ?`
 		args = append(args, models.StatusArchived.String())
 	}
-	if q := strings.TrimSpace(filter.Query); q != "" {
-		pattern := "%" + escapeLike(strings.ToLower(q)) + "%"
-		query += ` AND (LOWER(title) LIKE ? ESCAPE '\' OR LOWER(COALESCE(description, '')) LIKE ? ESCAPE '\')`
-		args = append(args, pattern, pattern)
+	if terms := normalizeSearchTerms(filter.Terms); len(terms) > 0 {
+		clauses := make([]string, len(terms))
+		for i, term := range terms {
+			pattern := "%" + escapeLike(strings.ToLower(term)) + "%"
+			clauses[i] = `(LOWER(title) LIKE ? ESCAPE '\' OR LOWER(COALESCE(description, '')) LIKE ? ESCAPE '\')`
+			args = append(args, pattern, pattern)
+		}
+		query += ` AND (` + strings.Join(clauses, ` OR `) + `)`
 	}
 	if a := strings.TrimSpace(filter.Author); a != "" {
 		query += ` AND LOWER(COALESCE(author, '')) LIKE ? ESCAPE '\'`
@@ -360,6 +364,16 @@ func nullToCategory(v sql.NullString) *models.Category {
 	}
 	category := models.Category(v.String)
 	return &category
+}
+
+func normalizeSearchTerms(terms []string) []string {
+	out := make([]string, 0, len(terms))
+	for _, term := range terms {
+		if term = strings.TrimSpace(term); term != "" {
+			out = append(out, term)
+		}
+	}
+	return out
 }
 
 func escapeLike(s string) string {

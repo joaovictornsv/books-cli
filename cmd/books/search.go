@@ -10,6 +10,7 @@ import (
 )
 
 var (
+	searchTerms  []string
 	searchAuthor string
 	searchPage   int
 	searchLimit  int
@@ -18,15 +19,19 @@ var (
 var searchCmd = &cobra.Command{
 	Use:   "search [query]",
 	Short: "Search books by title, description, and optional author",
-	Args:  cobra.ExactArgs(1),
+	Long: `Search books by case-insensitive substring in title or description.
+
+Pass a positional query and/or repeatable --term flags. Multiple terms are combined
+with OR (a book matches if any term hits title or description).`,
+	Args: cobra.MaximumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		query := strings.TrimSpace(args[0])
-		if query == "" {
-			return fmt.Errorf("search query cannot be empty")
+		terms, err := collectSearchTerms(args, searchTerms)
+		if err != nil {
+			return err
 		}
 
 		filter := db.SearchFilter{
-			Query:  query,
+			Terms:  terms,
 			Author: searchAuthor,
 		}
 
@@ -46,7 +51,26 @@ var searchCmd = &cobra.Command{
 	},
 }
 
+func collectSearchTerms(args, flagTerms []string) ([]string, error) {
+	terms := make([]string, 0, len(args)+len(flagTerms))
+	for _, arg := range args {
+		if term := strings.TrimSpace(arg); term != "" {
+			terms = append(terms, term)
+		}
+	}
+	for _, term := range flagTerms {
+		if term = strings.TrimSpace(term); term != "" {
+			terms = append(terms, term)
+		}
+	}
+	if len(terms) == 0 {
+		return nil, fmt.Errorf("at least one search term is required (positional query or --term)")
+	}
+	return terms, nil
+}
+
 func init() {
+	searchCmd.Flags().StringArrayVar(&searchTerms, "term", nil, "Search term substring (repeatable; terms are OR'd)")
 	searchCmd.Flags().StringVar(&searchAuthor, "author", "", "Filter by author substring")
 	addPaginationFlags(searchCmd, &searchPage, &searchLimit)
 	addFieldsFlag(searchCmd)
