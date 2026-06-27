@@ -1,0 +1,12 @@
+---
+description: Route book and reading-list requests to the books-cli skill
+alwaysApply: true
+---
+
+# Books CLI
+
+For any request about the user's books, reading list, wishlist, reading status, livros, or lista de leitura:
+
+1. Read `.cursor/skills/books-cli/SKILL.md` before acting (do not explore `cmd/`, `internal/`, or `docs/COMMANDS.md` to learn usage)
+2. Run the `books` CLI with `--json` — never simulate data or query SQLite directly
+3. Use `.cursor/skills/books-cli/reference.md` for flag/JSON details; use `examples.md` for phrase → command mapping
