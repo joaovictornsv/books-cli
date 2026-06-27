@@ -10,6 +10,7 @@ import (
 
 var (
 	addAuthor         string
+	addCategory       string
 	addStatus         string
 	addPriority       bool
 	addEligibleToSell bool
@@ -36,6 +37,13 @@ var addCmd = &cobra.Command{
 		if addAuthor != "" {
 			book.Author = &addAuthor
 		}
+		if addCategory != "" {
+			category, err := models.ParseCategory(addCategory)
+			if err != nil {
+				return err
+			}
+			book.Category = &category
+		}
 		if addNotes != "" {
 			book.Notes = &addNotes
 		}
@@ -55,6 +63,7 @@ var addCmd = &cobra.Command{
 
 func init() {
 	addCmd.Flags().StringVar(&addAuthor, "author", "", "Book author")
+	addCmd.Flags().StringVar(&addCategory, "category", "", "Book category")
 	addCmd.Flags().StringVar(&addStatus, "status", models.StatusNotStarted.String(), "Book status")
 	addCmd.Flags().BoolVar(&addPriority, "priority", false, "Mark as priority to buy")
 	addCmd.Flags().BoolVar(&addEligibleToSell, "eligible-to-sell", false, "Mark as eligible to sell")

@@ -28,6 +28,24 @@ Database path (first match):
 | `TO_BUY` | Wishlist |
 | `ARCHIVED` | Hidden from list/search |
 
+## Category enum
+
+Nullable on existing books; agent must set on every `add`.
+
+| Value | Meaning |
+| --- | --- |
+| `THEOLOGY` | Christian faith, Bible, devotionals, apologetics, pastoral |
+| `FICTION` | Novels, short stories, literary and genre fiction |
+| `SOFTWARE` | Programming, software engineering, CS |
+| `PHILOSOPHY` | Philosophy, ethics, stoicism, political philosophy |
+| `HISTORY` | Historical narrative and historiography |
+| `PERSONAL_DEVELOPMENT` | Self-help, productivity, habits, popular psychology |
+| `FINANCE_BUSINESS` | Money, investing, economics, business |
+| `SCIENCE` | Natural sciences, math popularization |
+| `POLITICS_CULTURE` | Political/social commentary, cultural criticism |
+| `BIOGRAPHY` | Biographies, memoirs, autobiographies |
+| `OTHER` | Catch-all when no other category fits |
+
 ## Commands
 
 ### `add [title]`
@@ -35,6 +53,7 @@ Database path (first match):
 | Flag | CLI default | Notes |
 | --- | --- | --- |
 | `--author` | empty | Optional |
+| `--category` | empty | **Agent must set on add** |
 | `--status` | `NOT_STARTED` | Agent default: `TO_BUY` |
 | `--priority` | false | Sets `priority_to_buy = 1` |
 | `--eligible-to-sell` | false | |
@@ -58,7 +77,9 @@ Title substring (case-insensitive). Optional `--author` substring filter. Same p
 
 ### `update [id]`
 
-At least one flag: `--title`, `--author`, `--status`, `--notes`, `--priority`, `--eligible-to-sell`, `--sold`.
+At least one flag: `--title`, `--author`, `--category`, `--status`, `--notes`, `--priority`, `--eligible-to-sell`, `--sold`.
+
+Pass `--category ""` to clear an existing category.
 
 ### `get [id]` · `archive [id]` · `config`
 
@@ -73,6 +94,7 @@ No extra flags beyond global `--json`.
   "id": 1,
   "title": "Dune",
   "author": "Frank Herbert",
+  "category": "FICTION",
   "status": "TO_BUY",
   "priority_to_buy": 0,
   "eligible_to_sell": 0,

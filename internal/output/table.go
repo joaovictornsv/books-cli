@@ -38,14 +38,15 @@ func (TableFormatter) PrintConfig(w io.Writer, cfg config.Config) error {
 
 func printBooksTable(w io.Writer, page BooksPage) error {
 	tw := tabwriter.NewWriter(w, 0, 0, 2, ' ', 0)
-	if _, err := fmt.Fprintln(tw, "ID\tTITLE\tAUTHOR\tSTATUS\tPRIORITY\tSELL\tSOLD\tADDED"); err != nil {
+	if _, err := fmt.Fprintln(tw, "ID\tTITLE\tAUTHOR\tCATEGORY\tSTATUS\tPRIORITY\tSELL\tSOLD\tADDED"); err != nil {
 		return err
 	}
 	for _, book := range page.Books {
-		_, err := fmt.Fprintf(tw, "%d\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n",
+		_, err := fmt.Fprintf(tw, "%d\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n",
 			book.ID,
 			book.Title,
 			derefOr(book.Author, "-"),
+			categoryLabel(book.Category),
 			book.Status,
 			boolMark(book.PriorityToBuy),
 			boolMark(book.EligibleToSell),
@@ -71,4 +72,11 @@ func derefOr(v *string, fallback string) string {
 		return fallback
 	}
 	return *v
+}
+
+func categoryLabel(v *models.Category) string {
+	if v == nil {
+		return "-"
+	}
+	return v.String()
 }

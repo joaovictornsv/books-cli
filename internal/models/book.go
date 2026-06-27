@@ -7,10 +7,11 @@ import (
 )
 
 type Book struct {
-	ID              int64   `json:"id"`
-	Title           string  `json:"title"`
-	Author          *string `json:"author,omitempty"`
-	Status          Status  `json:"status"`
+	ID              int64     `json:"id"`
+	Title           string    `json:"title"`
+	Author          *string   `json:"author,omitempty"`
+	Category        *Category `json:"category,omitempty"`
+	Status          Status    `json:"status"`
 	PriorityToBuy   int     `json:"priority_to_buy"`
 	EligibleToSell  int     `json:"eligible_to_sell"`
 	Sold            int     `json:"sold"`
@@ -21,10 +22,12 @@ type Book struct {
 }
 
 type BookPatch struct {
-	Title          *string
-	Author         *string
-	ClearAuthor    bool
-	Status         *Status
+	Title           *string
+	Author          *string
+	ClearAuthor     bool
+	Category        *Category
+	ClearCategory   bool
+	Status          *Status
 	PriorityToBuy  *int
 	EligibleToSell *int
 	Sold           *int
@@ -52,6 +55,9 @@ func ValidateBool01(name string, v int) error {
 func (b *Book) ValidateForCreate() error {
 	if strings.TrimSpace(b.Title) == "" {
 		return fmt.Errorf("title is required")
+	}
+	if b.Category != nil && !b.Category.Valid() {
+		return fmt.Errorf("invalid category %q", *b.Category)
 	}
 	if !b.Status.Valid() {
 		return fmt.Errorf("invalid status %q", b.Status)
@@ -91,6 +97,9 @@ func (b *Book) Validate() error {
 func (p *BookPatch) Validate() error {
 	if p.Title != nil && strings.TrimSpace(*p.Title) == "" {
 		return fmt.Errorf("title cannot be empty")
+	}
+	if p.Category != nil && !p.Category.Valid() {
+		return fmt.Errorf("invalid category %q", *p.Category)
 	}
 	if p.Status != nil && !p.Status.Valid() {
 		return fmt.Errorf("invalid status %q", *p.Status)

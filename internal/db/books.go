@@ -50,11 +50,12 @@ func (r *Repository) Create(ctx context.Context, book models.Book) (models.Book,
 
 	res, err := r.db.sql.ExecContext(ctx, `
 		INSERT INTO books (
-			title, author, status, priority_to_buy, eligible_to_sell, sold,
+			title, author, category, status, priority_to_buy, eligible_to_sell, sold,
 			notes, added_at, started_at, finished_at
-		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 		book.Title,
 		nullString(book.Author),
+		nullCategory(book.Category),
 		book.Status.String(),
 		book.PriorityToBuy,
 		book.EligibleToSell,
@@ -78,7 +79,7 @@ func (r *Repository) Create(ctx context.Context, book models.Book) (models.Book,
 
 func (r *Repository) GetByID(ctx context.Context, id int64) (models.Book, error) {
 	row := r.db.sql.QueryRowContext(ctx, `
-		SELECT id, title, author, status, priority_to_buy, eligible_to_sell, sold,
+		SELECT id, title, author, category, status, priority_to_buy, eligible_to_sell, sold,
 		       notes, added_at, started_at, finished_at
 		FROM books WHERE id = ?`, id)
 
@@ -109,7 +110,7 @@ func (r *Repository) queryBooksPage(ctx context.Context, where string, args []an
 	}
 
 	query := `
-		SELECT id, title, author, status, priority_to_buy, eligible_to_sell, sold,
+		SELECT id, title, author, category, status, priority_to_buy, eligible_to_sell, sold,
 		       notes, added_at, started_at, finished_at
 		FROM books WHERE 1=1` + where + ` ORDER BY id ASC`
 
@@ -211,6 +212,11 @@ func (r *Repository) Update(ctx context.Context, id int64, patch models.BookPatc
 	if patch.Notes != nil {
 		updated.Notes = patch.Notes
 	}
+	if patch.Category != nil {
+		updated.Category = patch.Category
+	} else if patch.ClearCategory {
+		updated.Category = nil
+	}
 
 	updated = models.ApplyStatusSideEffects(updated, models.NowTimestamp())
 
@@ -220,11 +226,12 @@ func (r *Repository) Update(ctx context.Context, id int64, patch models.BookPatc
 
 	_, err = r.db.sql.ExecContext(ctx, `
 		UPDATE books SET
-			title = ?, author = ?, status = ?, priority_to_buy = ?, eligible_to_sell = ?,
+			title = ?, author = ?, category = ?, status = ?, priority_to_buy = ?, eligible_to_sell = ?,
 			sold = ?, notes = ?, started_at = ?, finished_at = ?
 		WHERE id = ?`,
 		updated.Title,
 		nullString(updated.Author),
+		nullCategory(updated.Category),
 		updated.Status.String(),
 		updated.PriorityToBuy,
 		updated.EligibleToSell,
@@ -272,13 +279,14 @@ type rowScanner interface {
 
 func scanBook(row rowScanner) (models.Book, error) {
 	var book models.Book
-	var author, notes, startedAt, finishedAt sql.NullString
+	var author, category, notes, startedAt, finishedAt sql.NullString
 	var status string
 
 	err := row.Scan(
 		&book.ID,
 		&book.Title,
 		&author,
+		&category,
 		&status,
 		&book.PriorityToBuy,
 		&book.EligibleToSell,
@@ -293,6 +301,7 @@ func scanBook(row rowScanner) (models.Book, error) {
 	}
 
 	book.Author = nullToPtr(author)
+	book.Category = nullToCategory(category)
 	book.Notes = nullToPtr(notes)
 	book.StartedAt = nullToPtr(startedAt)
 	book.FinishedAt = nullToPtr(finishedAt)
@@ -314,6 +323,21 @@ func nullToPtr(v sql.NullString) *string {
 	}
 	s := v.String
 	return &s
+}
+
+func nullCategory(v *models.Category) sql.NullString {
+	if v == nil {
+		return sql.NullString{}
+	}
+	return sql.NullString{String: v.String(), Valid: true}
+}
+
+func nullToCategory(v sql.NullString) *models.Category {
+	if !v.Valid {
+		return nil
+	}
+	category := models.Category(v.String)
+	return &category
 }
 
 func escapeLike(s string) string {

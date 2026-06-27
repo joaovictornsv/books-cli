@@ -52,13 +52,44 @@ If the user did not provide an author:
 | --- | --- | --- |
 | `--status` | `TO_BUY` | Only when user specifies another status |
 | `--priority` | omit (false) | Pass `--priority` only when user asks for priority |
+| `--category` | **required on add** | Agent must always choose one — see [Category classification](#category-classification) |
 
 The CLI default for status is `NOT_STARTED` — **always pass `--status TO_BUY`** unless the user says otherwise.
+
+### Category classification
+
+When adding a book, **you must choose a category** and pass `--category <VALUE>`. The user does not need to specify it — this is your responsibility.
+
+Use exactly one value from the enum in [reference.md](reference.md#category-enum). Pick the **primary shelf** the book belongs on.
+
+| Category | Use when |
+| --- | --- |
+| `THEOLOGY` | Christian faith, Bible, devotionals, apologetics, pastoral, reformed/puritan works |
+| `FICTION` | Novels, short stories, literary fiction, genre fiction (mystery, sci-fi, adventure) |
+| `SOFTWARE` | Programming, software engineering, CS textbooks, developer craft |
+| `PHILOSOPHY` | Philosophy, ethics, stoicism, political philosophy classics |
+| `HISTORY` | Historical narrative, historiography, civilizational/world/Brazilian history |
+| `PERSONAL_DEVELOPMENT` | Self-help, productivity, habits, popular psychology, communication skills |
+| `FINANCE_BUSINESS` | Money, investing, economics, entrepreneurship, business strategy |
+| `SCIENCE` | Natural sciences, math popularization, cosmology (not programming) |
+| `POLITICS_CULTURE` | Political/social commentary, cultural criticism, sociology, media |
+| `BIOGRAPHY` | Biographies, memoirs, autobiographies centered on a person's life |
+| `OTHER` | Genuinely hard to classify; use sparingly |
+
+**Tie-break rules** (single category only):
+
+1. `SOFTWARE` wins over `PHILOSOPHY` for programming/CS books.
+2. `FICTION` wins for novels/stories even when philosophical (e.g. *Crime e castigo*, *1984*).
+3. `BIOGRAPHY` wins when the book is primarily about a person's life (e.g. *Elon Musk*, *Tesla*), even if it touches science or business.
+4. `THEOLOGY` wins over `POLITICS_CULTURE` when the primary lens is Christian faith.
+5. `HISTORY` over `FINANCE_BUSINESS` for broad historical surveys (e.g. *Sapiens*); finance/psychology-of-money books → `FINANCE_BUSINESS`.
+
+If uncertain between two non-`OTHER` options, prefer the more specific category (e.g. `BIOGRAPHY` over `HISTORY` for a biography of a historical figure).
 
 ### Command
 
 ```bash
-books add "<title>" --author "<author>" --status TO_BUY [--priority] [--notes "..."] --json
+books add "<title>" --author "<author>" --category <CATEGORY> --status TO_BUY [--priority] [--notes "..."] --json
 ```
 
 Search for duplicates before adding well-known titles. See [examples.md](examples.md).
@@ -75,6 +106,7 @@ After a successful add, present saved data in this format so the user can confir
 | **ID** | 42 |
 | **Title** | O Pequeno Príncipe |
 | **Author** | Antoine de Saint-Exupéry |
+| **Category** | FICTION |
 | **Status** | TO_BUY |
 | **Priority** | No |
 | **Added** | 2024-06-27T12:00:00Z |
@@ -115,10 +147,10 @@ books search "<query>" [--author "<author>"] --page 1 --limit 20 --json
 ```markdown
 ## Books (page 1 of 3 — 45 total)
 
-| ID | Title | Author | Status | Priority |
-| --- | --- | --- | --- | --- |
-| 1 | Dune | Frank Herbert | READING | - |
-| 2 | O Hobbit | J.R.R. Tolkien | TO_BUY | Y |
+| ID | Title | Author | Category | Status | Priority |
+| --- | --- | --- | --- | --- | --- |
+| 1 | Dune | Frank Herbert | FICTION | READING | - |
+| 2 | O Hobbit | J.R.R. Tolkien | FICTION | TO_BUY | Y |
 ```
 
 Boolean columns: `priority_to_buy` / `eligible_to_sell` / `sold` → `Y` or `-`.
@@ -135,16 +167,18 @@ Boolean columns: `priority_to_buy` / `eligible_to_sell` / `sold` → `Y` or `-`.
 | Intent | Command |
 | --- | --- |
 | View one book | `books get <id> --json` |
-| Update fields | `books update <id> --status READ [--priority] ... --json` |
+| Update fields | `books update <id> --status READ [--category FICTION] ... --json` |
 | Remove from active lists | `books archive <id> --json` |
 | Show DB path | `books config --json` |
 
 **Status values:** `NOT_STARTED`, `READING`, `READ`, `TO_BUY`, `ARCHIVED` (case-insensitive input). Full enum in [reference.md](reference.md).
+
+**Category values:** see [reference.md](reference.md#category-enum). Required on add (agent chooses); optional on existing books until backfilled.
 
 **Update:** at least one flag required. Setting `--priority` without a value sets priority to true; to clear priority on update, the user must say so — confirm intent if unclear.
 
 ## Error handling
 
 - Exit code `0` = success; `1` = validation, not found, or DB error.
-- Parse stderr for invalid status, bad page/limit, missing update flags, or unknown ID.
+- Parse stderr for invalid status, invalid category, bad page/limit, missing update flags, or unknown ID.
 - If `books` is missing, run `go install ./cmd/books` from the repo root; if that fails, try `go build -o books ./cmd/books` and use `./books`.

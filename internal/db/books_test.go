@@ -148,6 +148,51 @@ func TestRepositoryListFilters(t *testing.T) {
 	}
 }
 
+func TestRepositoryCategory(t *testing.T) {
+	database, err := OpenMemory()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer database.Close()
+
+	repo := NewRepository(database)
+	ctx := context.Background()
+	category := models.CategoryBiography
+
+	created, err := repo.Create(ctx, models.Book{
+		Title:          "Elon Musk",
+		Category:       &category,
+		Status:         models.StatusToBuy,
+		PriorityToBuy:  0,
+		EligibleToSell: 0,
+		Sold:           0,
+		AddedAt:        models.NowTimestamp(),
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if created.Category == nil || *created.Category != models.CategoryBiography {
+		t.Fatalf("expected BIOGRAPHY category, got %v", created.Category)
+	}
+
+	updated, err := repo.Update(ctx, created.ID, models.BookPatch{ClearCategory: true})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if updated.Category != nil {
+		t.Fatalf("expected category cleared, got %v", updated.Category)
+	}
+
+	fiction := models.CategoryFiction
+	updated, err = repo.Update(ctx, created.ID, models.BookPatch{Category: &fiction})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if updated.Category == nil || *updated.Category != models.CategoryFiction {
+		t.Fatalf("expected FICTION category, got %v", updated.Category)
+	}
+}
+
 func TestRepositoryClearAuthor(t *testing.T) {
 	database, err := OpenMemory()
 	if err != nil {

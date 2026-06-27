@@ -6,10 +6,11 @@ Phrase → command mapping. Always append `--json`. Resolve binary per [SKILL.md
 
 | User says | Action |
 | --- | --- |
-| "Add Dune to my wishlist" | Search author if missing, then `books add "Dune" --author "Frank Herbert" --status TO_BUY --json` |
-| "Adiciona O Hobbit" | Keep pt-BR title: `books add "O Hobbit" --author "J.R.R. Tolkien" --status TO_BUY --json` |
-| "Add 1984, priority" | `books add "1984" --author "George Orwell" --status TO_BUY --priority --json` |
-| "Add Sapiens as reading" | User override: `books add "Sapiens" --author "Yuval Noah Harari" --status READING --json` |
+| "Add Dune to my wishlist" | Search author if missing, classify as `FICTION`, then `books add "Dune" --author "Frank Herbert" --category FICTION --status TO_BUY --json` |
+| "Adiciona O Hobbit" | Keep pt-BR title: `books add "O Hobbit" --author "J.R.R. Tolkien" --category FICTION --status TO_BUY --json` |
+| "Add 1984, priority" | `books add "1984" --author "George Orwell" --category FICTION --status TO_BUY --priority --json` |
+| "Add Sapiens as reading" | User override status: `books add "Sapiens" --author "Yuval Noah Harari" --category HISTORY --status READING --json` |
+| "Add Elon Musk biography" | `books add "Elon Musk" --author "Walter Isaacson" --category BIOGRAPHY --status TO_BUY --json` |
 
 Before adding, search for duplicates when the title is well-known:
 
@@ -42,6 +43,7 @@ books search "dune" --page 1 --limit 20 --json
 | User says | Command |
 | --- | --- |
 | "Mark book 42 as read" | `books update 42 --status READ --json` |
+| "Recategorize book 42 as biography" | `books update 42 --category BIOGRAPHY --json` |
 | "Start reading book 7" | `books update 7 --status READING --json` |
 | "Show book 42" | `books get 42 --json` |
 | "Remove book 42 from my list" | `books archive 42 --json` |
