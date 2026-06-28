@@ -2,7 +2,7 @@
 name: books-cli
 description: >-
   Manage the personal books reading list via the books CLI (add, list, search,
-  update, archive, wishlist). Use when the user mentions books, reading list,
+  update, wishlist). Use when the user mentions books, reading list,
   livros, lista de leitura, biblioteca, wishlist, to buy, TO_BUY, reading status,
   ler, comprar livro, or books-cli.
 ---
@@ -75,7 +75,7 @@ Present list/search results as a table: ID, Title, Author, Category, Status, Pri
 | --- | --- |
 | View one book | `books get <id> --json` |
 | Update fields | `books update <id> --status READ [--category FICTION] ... --json` |
-| Remove from active lists | `books archive <id> --json` |
+| Remove from active lists | `books update <id> --status ARCHIVED --json` |
 | Show DB path | `books config --json` |
 
 `update` needs at least one flag. `--priority` without value sets true; confirm intent before clearing priority.

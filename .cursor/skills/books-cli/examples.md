@@ -48,5 +48,5 @@ books search --term hobbit --term "o hobbit" --json
 | "Recategorize book 42 as biography" | `books update 42 --category BIOGRAPHY --json` |
 | "Start reading book 7" | `books update 7 --status READING --json` |
 | "Show book 42" | `books get 42 --json` |
-| "Remove book 42 from my list" | `books archive 42 --json` |
+| "Remove book 42 from my list" | `books update 42 --status ARCHIVED --json` |
 | "Where is my database?" | `books config --json` |

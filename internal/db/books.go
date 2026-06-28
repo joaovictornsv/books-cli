@@ -258,11 +258,6 @@ func (r *Repository) Update(ctx context.Context, id int64, patch models.BookPatc
 	return r.GetByID(ctx, id)
 }
 
-func (r *Repository) Archive(ctx context.Context, id int64) (models.Book, error) {
-	status := models.StatusArchived
-	return r.Update(ctx, id, models.BookPatch{Status: &status})
-}
-
 func (r *Repository) Delete(ctx context.Context, id int64) (models.Book, error) {
 	book, err := r.GetByID(ctx, id)
 	if err != nil {

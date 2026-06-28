@@ -16,8 +16,7 @@ books search "le guin" --json
 | `get` | Show one book by ID |
 | `list` | List books with filters and pagination |
 | `search` | Search by title or description |
-| `update` | Update fields or reading status |
-| `archive` | Soft-delete (hide from normal lists) |
+| `update` | Update fields or reading status (including `--status ARCHIVED`) |
 | `delete` | Permanently remove a book |
 | `config` | Show resolved configuration |
 

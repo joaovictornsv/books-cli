@@ -59,7 +59,7 @@ Commands and flags that make everyday agent workflows safer and more precise.
 | Item | Type | Summary |
 | --- | --- | --- |
 | `schema` | command | Machine-readable enums and field semantics |
-| `restore` | command | Undo `archive` with an explicit target status |
+| `restore` | command | Restore from `ARCHIVED` with an explicit target status |
 | `check` | command | Pre-add duplicate detection by title/author |
 | `--category` | flag on `list`, `search` | Filter by category (e.g. fiction wishlist) |
 | `--sold` | flag on `list` | Filter sold books |

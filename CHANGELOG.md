@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed
+
+- `archive` command; use `update <id> --status ARCHIVED` instead
+
 ## [0.1.0] - 2026-06-27
 
 ### Added

@@ -91,13 +91,13 @@ For pt-BR/English variants, prefer one command with multiple `--term` flags over
 
 At least one flag: `--title`, `--author`, `--category`, `--status`, `--notes`, `--description`, `--priority`, `--eligible-to-sell`, `--sold`. Pass `--category ""` to clear.
 
-### `get [id]` · `archive [id]` · `config`
+### `get [id]` · `config`
 
 No extra flags beyond global `--json`.
 
 ## JSON shapes
 
-**Single book** (`add`, `get`, `update`, `archive`):
+**Single book** (`add`, `get`, `update`):
 
 ```json
 {

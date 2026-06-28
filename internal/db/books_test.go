@@ -57,7 +57,8 @@ func TestRepositoryCRUD(t *testing.T) {
 		t.Fatal("expected finished_at to be set")
 	}
 
-	archived, err := repo.Archive(ctx, created.ID)
+	archivedStatus := models.StatusArchived
+	archived, err := repo.Update(ctx, created.ID, models.BookPatch{Status: &archivedStatus})
 	if err != nil {
 		t.Fatal(err)
 	}

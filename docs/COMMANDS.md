@@ -188,7 +188,10 @@ books update 42 --status TO_BUY --priority --eligible-to-sell
 books update 42 --notes "Borrowed from library"
 books update 42 --description "Epic science fiction saga set on Arrakis."
 books update 42 --title "Dune" --author "Frank Herbert"
+books update 42 --status ARCHIVED
 ```
+
+To hide a book from `list` and `search`, set `--status ARCHIVED`. Use `list --status ARCHIVED` to view archived books.
 
 ### Arguments
 
@@ -215,19 +218,9 @@ books update 42 --title "Dune" --author "Frank Herbert"
 - Changing status to `READ` sets `finished_at` if it is not already set.
 - Existing timestamps are not overwritten when re-entering `READING` or `READ`.
 
-## `archive`
-
-Logically delete a book by setting its status to `ARCHIVED`.
-
-```bash
-books archive 42
-```
-
-Archived books are hidden from `list` and `search` by default.
-
 ## `delete`
 
-Permanently remove a book from the database. Unlike `archive`, the row is deleted and cannot be recovered from the CLI.
+Permanently remove a book from the database. Unlike setting `--status ARCHIVED`, the row is deleted and cannot be recovered from the CLI.
 
 ```bash
 books delete 42
