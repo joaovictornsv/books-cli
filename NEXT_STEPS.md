@@ -20,7 +20,7 @@ Aggregates and database safety. Small, mostly read-only changes; `count` can reu
 ### `count`
 
 ```bash
-books count [--status STATUS] [--category CATEGORY] [--priority] [--eligible-to-sell] [--sold] --json
+books count [--status STATUS] [--category CATEGORY] [--priority] [--eligible-to-sell] --json
 ```
 
 ```json
@@ -59,10 +59,8 @@ Commands and flags that make everyday agent workflows safer and more precise.
 | Item | Type | Summary |
 | --- | --- | --- |
 | `schema` | command | Machine-readable enums and field semantics |
-| `restore` | command | Restore from `ARCHIVED` with an explicit target status |
 | `check` | command | Pre-add duplicate detection by title/author |
 | `--category` | flag on `list`, `search` | Filter by category (e.g. fiction wishlist) |
-| `--sold` | flag on `list` | Filter sold books |
 | Clear booleans | flags on `update` | `--no-priority`, `--no-eligible-to-sell`, `--no-sold` |
 
 ### `schema`
@@ -72,14 +70,6 @@ books schema --json
 ```
 
 Returns status/category values, field types, and brief descriptions.
-
-### `restore`
-
-```bash
-books restore <id> [--status STATUS] --json
-```
-
-Default `--status`: `NOT_STARTED`. Only valid when current status is `ARCHIVED`.
 
 ### `check`
 
@@ -106,7 +96,7 @@ books update 42 --no-priority --json
 | Item | Action |
 | --- | --- |
 | Document `--fields` | `list` / `search --fields id,title,status` — smaller JSON payloads |
-| Document `delete` | Destructive; confirm with user before running |
+| Document `delete` | Destructive; pass `-y` to proceed without confirmation |
 | Duplicate check | Point to `check` once shipped; until then, bilingual `search --term` recipe |
 
 ---
@@ -118,7 +108,7 @@ Better discovery and navigation without schema changes.
 | Item | Type | Summary |
 | --- | --- | --- |
 | `--sort` / `--order` | flags on `list`, `search` | Sort by `added_at`, `title`, `finished_at`, etc. |
-| Search scope | `search` | Match `--term` against `notes` and `author` (keep `--author` as AND filter) |
+| Search scope | `search` | Match `--term` against `author` (keep `--author` as AND filter) |
 | Resolve by title | `get` or `resolve` | Look up a book by title when the user does not give an ID |
 | `recent` | command | Shortcut for recently finished or added books |
 
@@ -174,18 +164,6 @@ books import --input books.json [--dry-run]
 ```
 
 Complements `backup` (file copy) with structured, human-editable data.
-
----
-
-## Priority 5 — schema & polish
-
-Larger or optional work; may require DB migrations.
-
-| Item | Type | Summary |
-| --- | --- | --- |
-| `completion` docs | docs | Shell completion generation for human users |
-| ISBN / external ID | schema + CLI | Richer duplicate checks and web lookups |
-| Reading progress | schema + CLI | Optional `current_page` / `total_pages` for `READING` books |
 
 ---
 
