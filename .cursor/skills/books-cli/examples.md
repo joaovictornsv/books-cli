@@ -44,9 +44,9 @@ books search --term hobbit --term "o hobbit" --json
 
 | User says | Command |
 | --- | --- |
-| "Mark book 42 as read" | `books update 42 --status READ --json` |
+| "Mark book 42 as read" | `books update 42 --status READ --finished-at "<RFC3339>" --json` |
 | "Recategorize book 42 as biography" | `books update 42 --category BIOGRAPHY --json` |
-| "Start reading book 7" | `books update 7 --status READING --json` |
+| "Start reading book 7" | `books update 7 --status READING --started-at "<RFC3339>" --json` |
 | "Show book 42" | `books get 42 --json` |
 | "Remove book 42 from my list" | `books update 42 --status ARCHIVED --json` |
 | "Where is my database?" | `books config --json` |

@@ -226,8 +226,16 @@ func (r *Repository) Update(ctx context.Context, id int64, patch models.BookPatc
 	} else if patch.ClearCategory {
 		updated.Category = nil
 	}
-
-	updated = models.ApplyStatusSideEffects(updated, models.NowTimestamp())
+	if patch.StartedAt != nil {
+		updated.StartedAt = patch.StartedAt
+	} else if patch.ClearStartedAt {
+		updated.StartedAt = nil
+	}
+	if patch.FinishedAt != nil {
+		updated.FinishedAt = patch.FinishedAt
+	} else if patch.ClearFinishedAt {
+		updated.FinishedAt = nil
+	}
 
 	if err := updated.Validate(); err != nil {
 		return models.Book{}, err

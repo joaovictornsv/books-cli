@@ -44,8 +44,17 @@ func TestRepositoryCRUD(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if updated.StartedAt == nil {
-		t.Fatal("expected started_at to be set")
+	if updated.StartedAt != nil {
+		t.Fatalf("expected started_at to remain unset on status change, got %v", updated.StartedAt)
+	}
+
+	startedAt := "2024-06-01T12:00:00Z"
+	updated, err = repo.Update(ctx, created.ID, models.BookPatch{StartedAt: &startedAt})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if updated.StartedAt == nil || *updated.StartedAt != startedAt {
+		t.Fatalf("started_at = %v, want %q", updated.StartedAt, startedAt)
 	}
 
 	read := models.StatusRead
@@ -53,8 +62,25 @@ func TestRepositoryCRUD(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if updated.FinishedAt == nil {
-		t.Fatal("expected finished_at to be set")
+	if updated.FinishedAt != nil {
+		t.Fatalf("expected finished_at to remain unset on status change, got %v", updated.FinishedAt)
+	}
+
+	finishedAt := "2024-06-02T12:00:00Z"
+	updated, err = repo.Update(ctx, created.ID, models.BookPatch{FinishedAt: &finishedAt})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if updated.FinishedAt == nil || *updated.FinishedAt != finishedAt {
+		t.Fatalf("finished_at = %v, want %q", updated.FinishedAt, finishedAt)
+	}
+
+	updated, err = repo.Update(ctx, created.ID, models.BookPatch{ClearStartedAt: true})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if updated.StartedAt != nil {
+		t.Fatalf("expected started_at cleared, got %v", updated.StartedAt)
 	}
 
 	archivedStatus := models.StatusArchived

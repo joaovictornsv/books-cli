@@ -89,7 +89,9 @@ For pt-BR/English variants, prefer one command with multiple `--term` flags over
 
 ### `update [id]`
 
-At least one flag: `--title`, `--author`, `--category`, `--status`, `--notes`, `--description`, `--priority`, `--eligible-to-sell`, `--sold`. Pass `--category ""` to clear.
+At least one flag: `--title`, `--author`, `--category`, `--status`, `--notes`, `--description`, `--started-at`, `--finished-at`, `--priority`, `--eligible-to-sell`, `--sold`. Pass `--category ""`, `--started-at ""`, or `--finished-at ""` to clear.
+
+Status changes do not set or clear timestamps automatically. Set `--started-at` / `--finished-at` explicitly (RFC3339).
 
 ### `get [id]` · `config`
 
@@ -118,9 +120,3 @@ No extra flags beyond global `--json`.
 ```
 
 **List/search:** `{ "books": [], "total": 45, "page": 1, "limit": 20 }` — `total` is the full filtered count.
-
-## Status side-effects (update)
-
-- → `READING`: sets `started_at` if unset
-- → `READ`: sets `finished_at` if unset
-- Leaves `READING`/`READ`: may clear respective timestamps

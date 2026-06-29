@@ -32,8 +32,12 @@ type BookPatch struct {
 	PriorityToBuy  *int
 	EligibleToSell *int
 	Sold           *int
-	Notes          *string
-	Description    *string
+	Notes           *string
+	Description     *string
+	StartedAt       *string
+	ClearStartedAt  bool
+	FinishedAt      *string
+	ClearFinishedAt bool
 }
 
 func ToBool01(v bool) int {
@@ -118,6 +122,16 @@ func (p *BookPatch) Validate() error {
 	}
 	if p.Sold != nil {
 		if err := ValidateBool01("sold", *p.Sold); err != nil {
+			return err
+		}
+	}
+	if p.StartedAt != nil {
+		if err := validateTimestamp("started_at", *p.StartedAt, false); err != nil {
+			return err
+		}
+	}
+	if p.FinishedAt != nil {
+		if err := validateTimestamp("finished_at", *p.FinishedAt, false); err != nil {
 			return err
 		}
 	}

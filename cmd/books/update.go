@@ -16,6 +16,8 @@ var (
 	updateStatus         string
 	updateNotes          string
 	updateDescription    string
+	updateStartedAt      string
+	updateFinishedAt     string
 	updatePriority       bool
 	updateEligibleToSell bool
 	updateSold           bool
@@ -68,6 +70,20 @@ var updateCmd = &cobra.Command{
 		if flags.Changed("description") {
 			patch.Description = &updateDescription
 		}
+		if flags.Changed("started-at") {
+			if updateStartedAt == "" {
+				patch.ClearStartedAt = true
+			} else {
+				patch.StartedAt = &updateStartedAt
+			}
+		}
+		if flags.Changed("finished-at") {
+			if updateFinishedAt == "" {
+				patch.ClearFinishedAt = true
+			} else {
+				patch.FinishedAt = &updateFinishedAt
+			}
+		}
 		if flags.Changed("priority") {
 			v := models.ToBool01(updatePriority)
 			patch.PriorityToBuy = &v
@@ -83,8 +99,9 @@ var updateCmd = &cobra.Command{
 
 		if patch.Title == nil && patch.Author == nil && !patch.ClearAuthor &&
 			patch.Category == nil && !patch.ClearCategory && patch.Status == nil &&
-			patch.Notes == nil && patch.Description == nil && patch.PriorityToBuy == nil &&
-			patch.EligibleToSell == nil && patch.Sold == nil {
+			patch.Notes == nil && patch.Description == nil && patch.StartedAt == nil &&
+			!patch.ClearStartedAt && patch.FinishedAt == nil && !patch.ClearFinishedAt &&
+			patch.PriorityToBuy == nil && patch.EligibleToSell == nil && patch.Sold == nil {
 			return fmt.Errorf("no fields to update: pass at least one flag")
 		}
 
@@ -105,6 +122,8 @@ func init() {
 	updateCmd.Flags().StringVar(&updateStatus, "status", "", "New status")
 	updateCmd.Flags().StringVar(&updateNotes, "notes", "", "New notes")
 	updateCmd.Flags().StringVar(&updateDescription, "description", "", "New description")
+	updateCmd.Flags().StringVar(&updateStartedAt, "started-at", "", "Started reading at (RFC3339); pass empty string to clear")
+	updateCmd.Flags().StringVar(&updateFinishedAt, "finished-at", "", "Finished reading at (RFC3339); pass empty string to clear")
 	updateCmd.Flags().BoolVar(&updatePriority, "priority", false, "Set priority to buy")
 	updateCmd.Flags().BoolVar(&updateEligibleToSell, "eligible-to-sell", false, "Set eligible to sell")
 	updateCmd.Flags().BoolVar(&updateSold, "sold", false, "Mark as sold")

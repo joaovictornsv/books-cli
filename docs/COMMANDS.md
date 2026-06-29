@@ -208,15 +208,13 @@ To hide a book from `list` and `search`, set `--status ARCHIVED`. Use `list --st
 | `--status` | New status |
 | `--notes` | New notes |
 | `--description` | New description |
+| `--started-at` | Reading start timestamp (RFC3339); pass `""` to clear |
+| `--finished-at` | Reading finish timestamp (RFC3339); pass `""` to clear |
 | `--priority` | Set `priority_to_buy` (`true` → `1`, `false` → `0`) |
 | `--eligible-to-sell` | Set `eligible_to_sell` |
 | `--sold` | Set `sold` |
 
-### Status side-effects
-
-- Changing status to `READING` sets `started_at` if it is not already set.
-- Changing status to `READ` sets `finished_at` if it is not already set.
-- Existing timestamps are not overwritten when re-entering `READING` or `READ`.
+Status changes do not modify `started_at` or `finished_at`. Set those timestamps explicitly with the flags above.
 
 ## `delete`
 
