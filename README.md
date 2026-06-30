@@ -22,8 +22,6 @@ books search "le guin" --json
 
 Use `--json` on any command except `config` for scripting. Full flag reference: [docs/COMMANDS.md](docs/COMMANDS.md).
 
-**Next steps:** see [NEXT_STEPS.md](NEXT_STEPS.md)
-
 ## Setup
 
 **Requirements:** Go 1.25+
