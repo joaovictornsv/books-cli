@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `count` command with optional `--status`, `--category`, `--priority`, and `--eligible-to-sell` filters
+- `stats` command with aggregates by status/category, `finished_this_year`, and `priority_wishlist`
+- `backup` command to create a consistent SQLite database copy via `VACUUM INTO` (`--output`, `--force`)
+- JSON output for `config` via `--json`
+
 ### Removed
 
 - `archive` command; use `update <id> --status ARCHIVED` instead

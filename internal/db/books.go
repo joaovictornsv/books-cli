@@ -14,6 +14,7 @@ var ErrNotFound = errors.New("book not found")
 
 type ListFilter struct {
 	Status          *models.Status
+	Category        *models.Category
 	PriorityToBuy   *bool
 	EligibleToSell  *bool
 	IncludeArchived bool
@@ -99,6 +100,82 @@ func (r *Repository) List(ctx context.Context, filter ListFilter) (BooksResult, 
 	return r.queryBooksPage(ctx, where, args, filter.Pagination)
 }
 
+func (r *Repository) Count(ctx context.Context, filter ListFilter) (int, error) {
+	where, args := buildListWhere(filter)
+	return r.countBooks(ctx, where, args)
+}
+
+func (r *Repository) Stats(ctx context.Context, year int) (models.LibraryStats, error) {
+	stats := models.LibraryStats{
+		Year:       year,
+		ByStatus:   make(map[string]int),
+		ByCategory: make(map[string]int),
+	}
+
+	archived := models.StatusArchived.String()
+
+	byStatus, err := scanGroupedCounts(ctx, r.db.sql, `
+		SELECT status, COUNT(1) FROM books WHERE status != ? GROUP BY status`, archived)
+	if err != nil {
+		return models.LibraryStats{}, fmt.Errorf("stats by status: %w", err)
+	}
+	stats.ByStatus = byStatus
+
+	byCategory, err := scanGroupedCounts(ctx, r.db.sql, `
+		SELECT category, COUNT(1) FROM books
+		WHERE status != ? AND category IS NOT NULL
+		GROUP BY category`, archived)
+	if err != nil {
+		return models.LibraryStats{}, fmt.Errorf("stats by category: %w", err)
+	}
+	stats.ByCategory = byCategory
+
+	yearStart := fmt.Sprintf("%04d-01-01T00:00:00Z", year)
+	yearEnd := fmt.Sprintf("%04d-01-01T00:00:00Z", year+1)
+	err = r.db.sql.QueryRowContext(ctx, `
+		SELECT COUNT(1) FROM books
+		WHERE status != ? AND finished_at IS NOT NULL
+		  AND finished_at >= ? AND finished_at < ?`,
+		archived, yearStart, yearEnd,
+	).Scan(&stats.FinishedThisYear)
+	if err != nil {
+		return models.LibraryStats{}, fmt.Errorf("finished this year: %w", err)
+	}
+
+	toBuy := models.StatusToBuy.String()
+	err = r.db.sql.QueryRowContext(ctx, `
+		SELECT COUNT(1) FROM books
+		WHERE status = ? AND priority_to_buy = 1`, toBuy,
+	).Scan(&stats.PriorityWishlist)
+	if err != nil {
+		return models.LibraryStats{}, fmt.Errorf("priority wishlist: %w", err)
+	}
+
+	return stats, nil
+}
+
+func scanGroupedCounts(ctx context.Context, db *sql.DB, query string, args ...any) (map[string]int, error) {
+	rows, err := db.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	counts := make(map[string]int)
+	for rows.Next() {
+		var key string
+		var count int
+		if err := rows.Scan(&key, &count); err != nil {
+			return nil, fmt.Errorf("scan grouped count: %w", err)
+		}
+		counts[key] = count
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("iterate grouped counts: %w", err)
+	}
+	return counts, nil
+}
+
 func (r *Repository) Search(ctx context.Context, filter SearchFilter) (BooksResult, error) {
 	where, args := buildSearchWhere(filter)
 	return r.queryBooksPage(ctx, where, args, filter.Pagination)
@@ -139,6 +216,10 @@ func buildListWhere(filter ListFilter) (string, []any) {
 	if filter.Status != nil {
 		query += ` AND status = ?`
 		args = append(args, filter.Status.String())
+	}
+	if filter.Category != nil {
+		query += ` AND category = ?`
+		args = append(args, filter.Category.String())
 	}
 	if filter.PriorityToBuy != nil {
 		query += ` AND priority_to_buy = ?`
