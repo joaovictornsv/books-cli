@@ -18,6 +18,9 @@ type Formatter interface {
 	PrintBook(w io.Writer, book models.Book) error
 	PrintBooks(w io.Writer, page BooksPage) error
 	PrintConfig(w io.Writer, cfg config.Config) error
+	PrintCount(w io.Writer, total int) error
+	PrintStats(w io.Writer, stats models.LibraryStats) error
+	PrintBackup(w io.Writer, source, dest string) error
 }
 
 func New(json bool) Formatter {

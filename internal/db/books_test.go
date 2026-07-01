@@ -436,3 +436,110 @@ func TestRepositoryPagination(t *testing.T) {
 		t.Fatalf("expected Book 3 first on page 2, got %q", result.Books[0].Title)
 	}
 }
+
+func TestRepositoryCountAndStats(t *testing.T) {
+	database, err := OpenMemory()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer database.Close()
+
+	repo := NewRepository(database)
+	ctx := context.Background()
+
+	fiction := models.CategoryFiction
+	priority := true
+	_, err = repo.Create(ctx, models.Book{
+		Title:          "Dune",
+		Category:       &fiction,
+		Status:         models.StatusRead,
+		PriorityToBuy:  0,
+		EligibleToSell: 0,
+		Sold:           0,
+		AddedAt:        models.NowTimestamp(),
+		FinishedAt:     strPtr("2026-03-01T12:00:00Z"),
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = repo.Create(ctx, models.Book{
+		Title:          "Foundation",
+		Category:       &fiction,
+		Status:         models.StatusToBuy,
+		PriorityToBuy:  1,
+		EligibleToSell: 0,
+		Sold:           0,
+		AddedAt:        models.NowTimestamp(),
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = repo.Create(ctx, models.Book{
+		Title:          "Clean Code",
+		Status:         models.StatusNotStarted,
+		PriorityToBuy:  0,
+		EligibleToSell: 0,
+		Sold:           0,
+		AddedAt:        models.NowTimestamp(),
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	total, err := repo.Count(ctx, ListFilter{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if total != 3 {
+		t.Fatalf("expected total 3, got %d", total)
+	}
+
+	read := models.StatusRead
+	readCount, err := repo.Count(ctx, ListFilter{Status: &read})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if readCount != 1 {
+		t.Fatalf("expected 1 read book, got %d", readCount)
+	}
+
+	fictionCount, err := repo.Count(ctx, ListFilter{Category: &fiction})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if fictionCount != 2 {
+		t.Fatalf("expected 2 fiction books, got %d", fictionCount)
+	}
+
+	priorityCount, err := repo.Count(ctx, ListFilter{PriorityToBuy: &priority})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if priorityCount != 1 {
+		t.Fatalf("expected 1 priority book, got %d", priorityCount)
+	}
+
+	stats, err := repo.Stats(ctx, 2026)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if stats.ByStatus[string(models.StatusRead)] != 1 {
+		t.Fatalf("expected 1 read in stats, got %v", stats.ByStatus)
+	}
+	if stats.ByCategory[string(models.CategoryFiction)] != 2 {
+		t.Fatalf("expected 2 fiction in stats, got %v", stats.ByCategory)
+	}
+	if stats.FinishedThisYear != 1 {
+		t.Fatalf("expected 1 finished in 2026, got %d", stats.FinishedThisYear)
+	}
+	if stats.Year != 2026 {
+		t.Fatalf("expected year 2026, got %d", stats.Year)
+	}
+	if stats.PriorityWishlist != 1 {
+		t.Fatalf("expected 1 priority wishlist, got %d", stats.PriorityWishlist)
+	}
+}
+
+func strPtr(s string) *string {
+	return &s
+}

@@ -3,6 +3,7 @@ package output
 import (
 	"fmt"
 	"io"
+	"sort"
 	"strings"
 	"text/tabwriter"
 
@@ -34,6 +35,48 @@ func (TableFormatter) PrintBooks(w io.Writer, page BooksPage) error {
 
 func (TableFormatter) PrintConfig(w io.Writer, cfg config.Config) error {
 	return PrintConfigHuman(w, cfg)
+}
+
+func (TableFormatter) PrintCount(w io.Writer, total int) error {
+	_, err := fmt.Fprintf(w, "total: %d\n", total)
+	return err
+}
+
+func (TableFormatter) PrintStats(w io.Writer, stats models.LibraryStats) error {
+	if _, err := fmt.Fprintf(w, "finished_this_year (%d): %d\n", stats.Year, stats.FinishedThisYear); err != nil {
+		return err
+	}
+	if _, err := fmt.Fprintf(w, "priority_wishlist: %d\n", stats.PriorityWishlist); err != nil {
+		return err
+	}
+
+	if err := printStatsGroup(w, "by_status", stats.ByStatus); err != nil {
+		return err
+	}
+	return printStatsGroup(w, "by_category", stats.ByCategory)
+}
+
+func printStatsGroup(w io.Writer, label string, counts map[string]int) error {
+	if _, err := fmt.Fprintf(w, "\n%s:\n", label); err != nil {
+		return err
+	}
+	keys := make([]string, 0, len(counts))
+	for k := range counts {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	tw := tabwriter.NewWriter(w, 0, 0, 2, ' ', 0)
+	for _, k := range keys {
+		if _, err := fmt.Fprintf(tw, "  %s\t%d\n", k, counts[k]); err != nil {
+			return err
+		}
+	}
+	return tw.Flush()
+}
+
+func (TableFormatter) PrintBackup(w io.Writer, source, dest string) error {
+	_, err := fmt.Fprintf(w, "backed up %s to %s\n", source, dest)
+	return err
 }
 
 func printBooksTable(w io.Writer, page BooksPage) error {

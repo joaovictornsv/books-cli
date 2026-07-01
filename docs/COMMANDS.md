@@ -6,7 +6,7 @@ Detailed usage for the `books` CLI.
 
 | Flag | Description |
 | --- | --- |
-| `--json` | Machine-readable JSON output (not supported by `config`) |
+| `--json` | Machine-readable JSON output |
 | `--help` | Help for the current command |
 | `--version` | Print CLI version |
 
@@ -94,6 +94,7 @@ List books with optional filters. Archived books are excluded unless you filter 
 books list
 books list --status READING
 books list --status TO_BUY --priority
+books list --category FICTION
 books list --eligible-to-sell
 books list --page 2 --limit 20
 books list --json
@@ -105,6 +106,7 @@ books list --json --fields id,title,status
 | Flag | Default | Description |
 | --- | --- | --- |
 | `--status` | _(none)_ | Filter by status |
+| `--category` | _(none)_ | Filter by category |
 | `--priority` | `false` | Only books with `priority_to_buy = 1` |
 | `--eligible-to-sell` | `false` | Only books with `eligible_to_sell = 1` |
 | `--page` | `1` | Page number (1-based); used with `--limit` |
@@ -239,13 +241,14 @@ Returns the deleted book (same JSON shape as `get`).
 
 ## `config`
 
-Print the effective CLI configuration. Always human-readable (ignores `--json`).
+Print the effective CLI configuration.
 
 ```bash
 books config
+books config --json
 ```
 
-Example output:
+Example human output:
 
 ```text
 database_path: /home/user/.local/share/books/books.db
@@ -254,14 +257,101 @@ config_exists: false
 source: default
 ```
 
+Example JSON output:
+
+```json
+{
+  "database_path": "/home/user/.local/share/books/books.db",
+  "config_path": "/home/user/.config/books/config.toml",
+  "config_exists": false,
+  "source": "default"
+}
+```
+
 `source` is one of: `env`, `config_file`, `default`.
 
-## Planned for v0.2
+## `count`
 
-| Command | Summary |
-| --- | --- |
-| `stats` | Reading statistics |
-| `backup` | Copy the database file |
+Count books matching optional filters without paginating through `list`.
+
+```bash
+books count
+books count --status READ --json
+books count --status TO_BUY --category FICTION --priority --json
+```
+
+### Flags
+
+| Flag | Default | Description |
+| --- | --- | --- |
+| `--status` | _(none)_ | Filter by status |
+| `--category` | _(none)_ | Filter by category |
+| `--priority` | `false` | Only priority-to-buy books |
+| `--eligible-to-sell` | `false` | Only eligible-to-sell books |
+
+Archived books are excluded (same as `list`).
+
+### JSON output
+
+```json
+{ "total": 42 }
+```
+
+## `stats`
+
+Show library aggregates: counts by status and category, books finished in a year, and priority wishlist size.
+
+```bash
+books stats
+books stats --year 2025 --json
+```
+
+### Flags
+
+| Flag | Default | Description |
+| --- | --- | --- |
+| `--year` | current year | Year used for `finished_this_year` |
+
+### JSON output
+
+```json
+{
+  "year": 2025,
+  "by_status": { "READ": 12, "READING": 2, "TO_BUY": 8, "NOT_STARTED": 5 },
+  "by_category": { "FICTION": 10, "SOFTWARE": 7 },
+  "finished_this_year": 4,
+  "priority_wishlist": 3
+}
+```
+
+Archived books are excluded from `by_status` and `by_category`. `priority_wishlist` counts `TO_BUY` books with `priority_to_buy = 1`.
+
+## `backup`
+
+Create a consistent copy of the SQLite database at another path using SQLite's `VACUUM INTO` (safe while the database is open).
+
+```bash
+books backup --output /path/to/books-backup.db
+books backup --output /path/to/books-backup.db --force --json
+```
+
+### Flags
+
+| Flag | Default | Description |
+| --- | --- | --- |
+| `--output` | _(required)_ | Destination file path |
+| `--force` | `false` | Overwrite destination if it already exists |
+
+Uses the resolved database path from `books config`. Fails if the source database does not exist.
+
+### JSON output
+
+```json
+{
+  "source": "/home/user/.local/share/books/books.db",
+  "output": "/path/to/books-backup.db"
+}
+```
 
 ## Exit codes
 

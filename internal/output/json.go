@@ -61,6 +61,34 @@ func (JSONFormatter) PrintConfig(w io.Writer, cfg config.Config) error {
 	return enc.Encode(payload)
 }
 
+func (JSONFormatter) PrintCount(w io.Writer, total int) error {
+	enc := json.NewEncoder(w)
+	enc.SetIndent("", "  ")
+	return enc.Encode(map[string]int{"total": total})
+}
+
+func (JSONFormatter) PrintStats(w io.Writer, stats models.LibraryStats) error {
+	payload := map[string]any{
+		"year":               stats.Year,
+		"by_status":          stats.ByStatus,
+		"by_category":        stats.ByCategory,
+		"finished_this_year": stats.FinishedThisYear,
+		"priority_wishlist":  stats.PriorityWishlist,
+	}
+	enc := json.NewEncoder(w)
+	enc.SetIndent("", "  ")
+	return enc.Encode(payload)
+}
+
+func (JSONFormatter) PrintBackup(w io.Writer, source, dest string) error {
+	enc := json.NewEncoder(w)
+	enc.SetIndent("", "  ")
+	return enc.Encode(map[string]string{
+		"source": source,
+		"output": dest,
+	})
+}
+
 func PrintConfigHuman(w io.Writer, cfg config.Config) error {
 	_, err := fmt.Fprintf(w, "database_path: %s\nconfig_path: %s\nconfig_exists: %t\nsource: %s\n",
 		cfg.DatabasePath, cfg.ConfigPath, cfg.ConfigExists, cfg.Source)
