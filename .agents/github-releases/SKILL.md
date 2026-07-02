@@ -1,9 +1,10 @@
 ---
 name: github-releases
 description: >-
-  Create and publish simple GitHub releases for books-cli using semantic
-  versioning. Use when cutting a release, tagging a version, writing release
-  notes, or updating CHANGELOG.md for a new version.
+  Create and publish GitHub releases for books-cli using semantic versioning
+  and concise bullet-point release notes derived from CHANGELOG.md. Use when
+  cutting a release, tagging a version, writing release notes, or updating
+  CHANGELOG.md for a new version.
 ---
 
 # GitHub Releases (books-cli)
@@ -49,12 +50,15 @@ git push origin "$VERSION"
 # Build release binary (linux/amd64) from the tagged commit
 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o "$ASSET" ./cmd/books
 
-# Create GitHub release with binary attached
+# Create GitHub release with binary attached (notes: see "Release notes format" below)
 gh release create "$VERSION" \
   --title "$VERSION" \
-  --notes "$(awk -v v="${VERSION#v}" '/^## \['v'\]/{flag=1; next} /^## \[/{flag=0} flag' CHANGELOG.md)
-
-See CHANGELOG.md for details." \
+  --notes "$(cat <<'EOF'
+- <opening line: one-sentence theme for this release>
+- <bullet: user-visible change>
+- <bullet: user-visible change>
+EOF
+)" \
   "$ASSET"
 
 rm -f "$ASSET"
@@ -64,12 +68,44 @@ Every release must include the built binary. Do not publish a release without up
 
 Add extra GOOS/GOARCH builds only when explicitly requested; default is linux/amd64 only.
 
-## Release notes content
+## Release notes format
 
-Keep notes short:
+Read the version section in `CHANGELOG.md`, then write **concise bullet-point notes** for the GitHub release. Do not paste the raw changelog or use a generic placeholder like "See CHANGELOG.md for details."
 
-- 3–5 bullet points of user-visible changes.
-- Link to full changelog: `See CHANGELOG.md for details.`
+### Rules
+
+- **Bullet list only** — every line starts with `-`.
+- **3–5 bullets** for most releases; split Added/Removed into separate bullets when both exist.
+- **First bullet** — one short sentence framing the release (theme or scope).
+- **Following bullets** — user-visible changes only; group related items in one bullet when it stays readable.
+- **Concise, not exhaustive** — summarize smartly; skip internal/CI/docs-only items unless they matter to users.
+- **No extra sections** — no headings, no "See CHANGELOG.md" footer.
+
+### Examples (from this repo)
+
+**v0.1.0** (initial release):
+
+```markdown
+- First release — SQLite-backed CLI for managing a personal reading list.
+- Core commands: `add`, `get`, `list`, `search`, `update`, `archive`, `delete`, `config`. Optional book descriptions, status tracking with automatic timestamps, paginated `list`/`search`, and `--json` output for scripting. Database path configurable via `BOOKS_DB`, config file, or default.
+```
+
+**v0.2.0** (feature + breaking change):
+
+```markdown
+- Analytics and maintenance release.
+- Adds `count`, `stats`, and `backup` commands, `--category` filtering on `list`, and `--json` on `config`.
+- Removes the standalone `archive` command — use `update <id> --status ARCHIVED` instead.
+```
+
+### Editing an existing release
+
+```bash
+gh release edit v0.2.0 --notes "$(cat <<'EOF'
+- ...
+EOF
+)"
+```
 
 ## Checklist
 
@@ -77,4 +113,5 @@ Keep notes short:
 - [ ] Annotated tag created locally (`git tag -a vX.Y.Z -m vX.Y.Z`)
 - [ ] Commit and tag pushed to `origin`
 - [ ] `books-linux-amd64` built from the tagged commit
+- [ ] Release notes written as concise bullets (see format above)
 - [ ] GitHub release created with matching notes and binary uploaded
