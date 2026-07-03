@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-07-03
+
+### Added
+
+- `schema` command for machine-readable status/category enums and book field semantics
+- `check` command for pre-add duplicate detection by title (and optional author)
+- `--category` filter on `search`
+- `--no-priority`, `--no-eligible-to-sell`, and `--no-sold` flags on `update` to clear boolean fields explicitly
+- `delete` requires `--yes` / `-y` when using `--json`; interactive mode prompts on a TTY unless `-y` is passed
+
 ## [0.2.0] - 2026-07-01
 
 ### Added

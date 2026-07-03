@@ -7,19 +7,19 @@ import (
 )
 
 type Book struct {
-	ID              int64     `json:"id"`
-	Title           string    `json:"title"`
-	Author          *string   `json:"author,omitempty"`
-	Category        *Category `json:"category,omitempty"`
-	Status          Status    `json:"status"`
-	PriorityToBuy   int     `json:"priority_to_buy"`
-	EligibleToSell  int     `json:"eligible_to_sell"`
-	Sold            int     `json:"sold"`
-	Notes           *string `json:"notes,omitempty"`
-	Description     *string `json:"description,omitempty"`
-	AddedAt         string  `json:"added_at"`
-	StartedAt       *string `json:"started_at,omitempty"`
-	FinishedAt      *string `json:"finished_at,omitempty"`
+	ID             int64     `json:"id"`
+	Title          string    `json:"title"`
+	Author         *string   `json:"author,omitempty"`
+	Category       *Category `json:"category,omitempty"`
+	Status         Status    `json:"status"`
+	PriorityToBuy  int       `json:"priority_to_buy"`
+	EligibleToSell int       `json:"eligible_to_sell"`
+	Sold           int       `json:"sold"`
+	Notes          *string   `json:"notes,omitempty"`
+	Description    *string   `json:"description,omitempty"`
+	AddedAt        string    `json:"added_at"`
+	StartedAt      *string   `json:"started_at,omitempty"`
+	FinishedAt     *string   `json:"finished_at,omitempty"`
 }
 
 type BookPatch struct {
@@ -29,9 +29,9 @@ type BookPatch struct {
 	Category        *Category
 	ClearCategory   bool
 	Status          *Status
-	PriorityToBuy  *int
-	EligibleToSell *int
-	Sold           *int
+	PriorityToBuy   *int
+	EligibleToSell  *int
+	Sold            *int
 	Notes           *string
 	Description     *string
 	StartedAt       *string
@@ -154,4 +154,3 @@ func validateTimestamp(name, value string, required bool) error {
 	}
 	return nil
 }
-

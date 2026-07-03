@@ -21,6 +21,7 @@ type Formatter interface {
 	PrintCount(w io.Writer, total int) error
 	PrintStats(w io.Writer, stats models.LibraryStats) error
 	PrintBackup(w io.Writer, source, dest string) error
+	PrintSchema(w io.Writer, schema models.SchemaDocument) error
 }
 
 func New(json bool) Formatter {

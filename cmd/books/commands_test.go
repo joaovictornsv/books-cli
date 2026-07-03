@@ -223,3 +223,91 @@ func TestBackupCopiesDatabase(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestSchemaJSONOutput(t *testing.T) {
+	var buf bytes.Buffer
+	rootCmd.SetOut(&buf)
+	rootCmd.SetErr(&buf)
+	rootCmd.SetArgs([]string{"schema", "--json"})
+
+	if err := rootCmd.Execute(); err != nil {
+		t.Fatal(err)
+	}
+
+	var resp struct {
+		Statuses   []struct{ Value string } `json:"statuses"`
+		Categories []struct{ Value string } `json:"categories"`
+		Fields     []struct{ Name string }  `json:"fields"`
+	}
+	if err := json.Unmarshal(buf.Bytes(), &resp); err != nil {
+		t.Fatalf("decode schema JSON: %v\noutput: %s", err, buf.String())
+	}
+	if len(resp.Statuses) == 0 || len(resp.Categories) == 0 || len(resp.Fields) == 0 {
+		t.Fatalf("expected non-empty schema sections, got %+v", resp)
+	}
+}
+
+func TestCheckJSONOutput(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	t.Setenv("USERPROFILE", home)
+	dbPath := filepath.Join(home, "books.db")
+	t.Setenv("BOOKS_DB", dbPath)
+
+	var buf bytes.Buffer
+	rootCmd.SetOut(&buf)
+	rootCmd.SetErr(&buf)
+	rootCmd.SetArgs([]string{"add", "Dune", "--json"})
+	if err := rootCmd.Execute(); err != nil {
+		t.Fatal(err)
+	}
+
+	buf.Reset()
+	rootCmd.SetArgs([]string{"check", "--title", "Dune", "--json"})
+	if err := rootCmd.Execute(); err != nil {
+		t.Fatal(err)
+	}
+
+	var resp struct {
+		Books []struct{ Title string } `json:"books"`
+		Total int                      `json:"total"`
+	}
+	if err := json.Unmarshal(buf.Bytes(), &resp); err != nil {
+		t.Fatalf("decode check JSON: %v\noutput: %s", err, buf.String())
+	}
+	if resp.Total < 1 || len(resp.Books) < 1 {
+		t.Fatalf("expected at least one match, got %+v", resp)
+	}
+}
+
+func TestDeleteRequiresYesWithJSON(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	t.Setenv("USERPROFILE", home)
+	dbPath := filepath.Join(home, "books.db")
+	t.Setenv("BOOKS_DB", dbPath)
+
+	var buf bytes.Buffer
+	rootCmd.SetOut(&buf)
+	rootCmd.SetErr(&buf)
+	rootCmd.SetArgs([]string{"add", "Dune", "--json"})
+	if err := rootCmd.Execute(); err != nil {
+		t.Fatal(err)
+	}
+
+	buf.Reset()
+	rootCmd.SetArgs([]string{"delete", "1", "--json"})
+	err := rootCmd.Execute()
+	if err == nil {
+		t.Fatal("expected error when deleting with --json without --yes")
+	}
+	if !strings.Contains(err.Error(), "requires --yes") {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	buf.Reset()
+	rootCmd.SetArgs([]string{"delete", "1", "--json", "-y"})
+	if err := rootCmd.Execute(); err != nil {
+		t.Fatal(err)
+	}
+}

@@ -154,7 +154,7 @@ books search "le guin"
 books search --term hobbit --term "o hobbit"
 books search "dune" --author "herbert"
 books search --term senhor --term lord --author "tolkien" --page 1 --limit 10
-books search "dune" --author "herbert" --json
+books search "dune" --author "herbert" --category FICTION --json
 books search "dune" --json --fields id,title,author
 ```
 
@@ -170,6 +170,7 @@ books search "dune" --json --fields id,title,author
 | --- | --- | --- |
 | `--term` | _(none)_ | Search term substring (repeatable; terms are OR'd across title/description) |
 | `--author` | _(none)_ | Substring to match against author (case-insensitive) |
+| `--category` | _(none)_ | Filter by category |
 | `--page` | `1` | Page number (1-based); used with `--limit` |
 | `--limit` | `20` | Results per page; used with `--page` |
 | `--fields` | _(none)_ | Comma-separated book fields to return (requires `--json`) |
@@ -191,9 +192,12 @@ books update 42 --notes "Borrowed from library"
 books update 42 --description "Epic science fiction saga set on Arrakis."
 books update 42 --title "Dune" --author "Frank Herbert"
 books update 42 --status ARCHIVED
+books update 42 --no-priority
 ```
 
 To hide a book from `list` and `search`, set `--status ARCHIVED`. Use `list --status ARCHIVED` to view archived books.
+
+Prefer `--no-priority`, `--no-eligible-to-sell`, and `--no-sold` to clear boolean fields explicitly (especially for agents).
 
 ### Arguments
 
@@ -213,8 +217,11 @@ To hide a book from `list` and `search`, set `--status ARCHIVED`. Use `list --st
 | `--started-at` | Reading start timestamp (RFC3339); pass `""` to clear |
 | `--finished-at` | Reading finish timestamp (RFC3339); pass `""` to clear |
 | `--priority` | Set `priority_to_buy` (`true` → `1`, `false` → `0`) |
+| `--no-priority` | Clear `priority_to_buy` (set to `0`) |
 | `--eligible-to-sell` | Set `eligible_to_sell` |
+| `--no-eligible-to-sell` | Clear `eligible_to_sell` |
 | `--sold` | Set `sold` |
+| `--no-sold` | Clear `sold` |
 
 Status changes do not modify `started_at` or `finished_at`. Set those timestamps explicitly with the flags above.
 
@@ -224,7 +231,11 @@ Permanently remove a book from the database. Unlike setting `--status ARCHIVED`,
 
 ```bash
 books delete 42
+books delete 42 -y
+books delete 42 --json -y
 ```
+
+When using `--json`, you must pass `--yes` / `-y` to confirm. In interactive mode on a TTY, the CLI prompts unless `-y` is passed.
 
 ### Arguments
 
@@ -232,12 +243,58 @@ books delete 42
 | --- | --- |
 | `id` | Positive integer book ID |
 
+### Flags
+
+| Flag | Description |
+| --- | --- |
+| `--yes`, `-y` | Confirm deletion without prompting |
+
 ### Exit codes
 
 - `0` on success
-- `1` if the book is not found or the ID is invalid
+- `1` if the book is not found, the ID is invalid, or confirmation was not given
 
 Returns the deleted book (same JSON shape as `get`).
+
+## `check`
+
+Find likely duplicate books by title before `add`. Matches **title only** (not description). Archived books are excluded.
+
+```bash
+books check --title "Dune"
+books check --title "Dune" --author "Herbert" --json
+books check --title "Dune" --exact --json
+```
+
+### Flags
+
+| Flag | Default | Description |
+| --- | --- | --- |
+| `--title` | _(required)_ | Title to check for duplicates |
+| `--author` | _(none)_ | Substring to match against author (case-insensitive) |
+| `--exact` | `false` | Case-insensitive exact title match (default: substring on title) |
+
+### JSON output
+
+Same shape as `list` (without pagination): `{ "books": [...], "total": N }`.
+
+## `schema`
+
+Show machine-readable enums and book field semantics. No database access.
+
+```bash
+books schema --json
+```
+
+### JSON output
+
+```json
+{
+  "statuses": [{ "value": "READ", "description": "Finished" }],
+  "categories": [{ "value": "FICTION", "description": "..." }],
+  "fields": [{ "name": "id", "type": "integer", "optional": false, "description": "..." }]
+}
+```
 
 ## `config`
 

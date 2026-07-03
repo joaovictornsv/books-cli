@@ -16,8 +16,13 @@ books search "le guin" --json
 | `get` | Show one book by ID |
 | `list` | List books with filters and pagination |
 | `search` | Search by title or description |
+| `check` | Find likely duplicates by title before adding |
 | `update` | Update fields or reading status (including `--status ARCHIVED`) |
 | `delete` | Permanently remove a book |
+| `schema` | Show enums and field semantics (`--json`) |
+| `count` | Count books matching filters |
+| `stats` | Library aggregates |
+| `backup` | Copy the SQLite database |
 | `config` | Show resolved configuration |
 
 Use `--json` on any command except `config` for scripting. Full flag reference: [docs/COMMANDS.md](docs/COMMANDS.md).

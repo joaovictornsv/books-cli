@@ -12,7 +12,14 @@ Phrase → command. Always append `--json`. See [SKILL.md](SKILL.md) for agent r
 | "Add Sapiens as reading" | `... --category HISTORY --status READING --json` |
 | "Add Elon Musk biography" | `... --category BIOGRAPHY --json` |
 
-Duplicate check (bilingual titles):
+Duplicate check before add:
+
+```bash
+books check --title "Dune" --author "Herbert" --json
+books check --title "O Hobbit" --json
+```
+
+Cross-language fallback (when titles differ by language):
 
 ```bash
 books search --term hobbit --term "o hobbit" --json
@@ -22,8 +29,8 @@ books search --term hobbit --term "o hobbit" --json
 
 | User says | Command |
 | --- | --- |
-| "Do I already have Dune?" | `books search "dune" --json` |
-| "Do I have The Hobbit?" | `books search --term hobbit --term "o hobbit" --json` |
+| "Do I already have Dune?" | `books check --title "Dune" --json` |
+| "Do I have The Hobbit?" | `books check --title "Hobbit" --json` or bilingual `search --term hobbit --term "o hobbit" --json` |
 | "Tenho O Senhor dos Anéis?" | `books search --term senhor --term lord --author "tolkien" --json` |
 | "Books about Arrakis" | `books search "arrakis" --json` |
 | "Find books by Le Guin" | `books search "guin" --json` |
@@ -36,9 +43,11 @@ books search --term hobbit --term "o hobbit" --json
 | --- | --- |
 | "What am I reading?" | `books list --status READING --json` |
 | "Show my wishlist" | `books list --status TO_BUY --json` |
+| "Fiction on my wishlist" | `books list --status TO_BUY --category FICTION --json` |
 | "Priority books to buy" | `books list --status TO_BUY --priority --json` |
 | "Books I haven't started" | `books list --status NOT_STARTED --json` |
 | "All my books" | `books list --json` — paginate if `total > limit` |
+| "Compact wishlist" | `books list --status TO_BUY --fields id,title,status --json` |
 
 ## Update & other
 
@@ -47,6 +56,9 @@ books search --term hobbit --term "o hobbit" --json
 | "Mark book 42 as read" | `books update 42 --status READ --finished-at "<RFC3339>" --json` |
 | "Recategorize book 42 as biography" | `books update 42 --category BIOGRAPHY --json` |
 | "Start reading book 7" | `books update 7 --status READING --started-at "<RFC3339>" --json` |
+| "Remove priority from book 3" | `books update 3 --no-priority --json` |
 | "Show book 42" | `books get 42 --json` |
 | "Remove book 42 from my list" | `books update 42 --status ARCHIVED --json` |
+| "Delete book 42 permanently" | `books delete 42 -y --json` |
+| "What statuses exist?" | `books schema --json` |
 | "Where is my database?" | `books config --json` |

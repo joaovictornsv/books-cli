@@ -79,6 +79,12 @@ func (TableFormatter) PrintBackup(w io.Writer, source, dest string) error {
 	return err
 }
 
+func (TableFormatter) PrintSchema(w io.Writer, schema models.SchemaDocument) error {
+	_, err := fmt.Fprintf(w, "%d statuses, %d categories, %d fields (use --json for full schema)\n",
+		len(schema.Statuses), len(schema.Categories), len(schema.Fields))
+	return err
+}
+
 func printBooksTable(w io.Writer, page BooksPage) error {
 	tw := tabwriter.NewWriter(w, 0, 0, 2, ' ', 0)
 	if _, err := fmt.Fprintln(tw, "ID\tTITLE\tAUTHOR\tCATEGORY\tSTATUS\tPRIORITY\tSELL\tSOLD\tADDED"); err != nil {

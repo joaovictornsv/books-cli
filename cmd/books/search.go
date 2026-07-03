@@ -10,10 +10,11 @@ import (
 )
 
 var (
-	searchTerms  []string
-	searchAuthor string
-	searchPage   int
-	searchLimit  int
+	searchTerms    []string
+	searchAuthor   string
+	searchCategory string
+	searchPage     int
+	searchLimit    int
 )
 
 var searchCmd = &cobra.Command{
@@ -34,6 +35,12 @@ with OR (a book matches if any term hits title or description).`,
 			Terms:  terms,
 			Author: searchAuthor,
 		}
+
+		category, err := categoryFromFlag(cmd, &searchCategory)
+		if err != nil {
+			return err
+		}
+		filter.Category = category
 
 		pagination, err := paginationFromFlags(cmd, &searchPage, &searchLimit)
 		if err != nil {
@@ -72,6 +79,7 @@ func collectSearchTerms(args, flagTerms []string) ([]string, error) {
 func init() {
 	searchCmd.Flags().StringArrayVar(&searchTerms, "term", nil, "Search term substring (repeatable; terms are OR'd)")
 	searchCmd.Flags().StringVar(&searchAuthor, "author", "", "Filter by author substring")
+	searchCmd.Flags().StringVar(&searchCategory, "category", "", "Filter by category")
 	addPaginationFlags(searchCmd, &searchPage, &searchLimit)
 	addFieldsFlag(searchCmd)
 	rootCmd.AddCommand(searchCmd)

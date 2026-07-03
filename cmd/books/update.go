@@ -10,17 +10,20 @@ import (
 )
 
 var (
-	updateTitle          string
-	updateAuthor         string
-	updateCategory       string
-	updateStatus         string
-	updateNotes          string
-	updateDescription    string
-	updateStartedAt      string
-	updateFinishedAt     string
-	updatePriority       bool
-	updateEligibleToSell bool
-	updateSold           bool
+	updateTitle            string
+	updateAuthor           string
+	updateCategory         string
+	updateStatus           string
+	updateNotes            string
+	updateDescription      string
+	updateStartedAt        string
+	updateFinishedAt       string
+	updatePriority         bool
+	updateNoPriority       bool
+	updateEligibleToSell   bool
+	updateNoEligibleToSell bool
+	updateSold             bool
+	updateNoSold           bool
 )
 
 var updateCmd = &cobra.Command{
@@ -85,15 +88,36 @@ var updateCmd = &cobra.Command{
 			}
 		}
 		if flags.Changed("priority") {
+			if flags.Changed("no-priority") {
+				return fmt.Errorf("cannot use --priority and --no-priority together")
+			}
 			v := models.ToBool01(updatePriority)
 			patch.PriorityToBuy = &v
 		}
+		if flags.Changed("no-priority") {
+			v := 0
+			patch.PriorityToBuy = &v
+		}
 		if flags.Changed("eligible-to-sell") {
+			if flags.Changed("no-eligible-to-sell") {
+				return fmt.Errorf("cannot use --eligible-to-sell and --no-eligible-to-sell together")
+			}
 			v := models.ToBool01(updateEligibleToSell)
 			patch.EligibleToSell = &v
 		}
+		if flags.Changed("no-eligible-to-sell") {
+			v := 0
+			patch.EligibleToSell = &v
+		}
 		if flags.Changed("sold") {
+			if flags.Changed("no-sold") {
+				return fmt.Errorf("cannot use --sold and --no-sold together")
+			}
 			v := models.ToBool01(updateSold)
+			patch.Sold = &v
+		}
+		if flags.Changed("no-sold") {
+			v := 0
 			patch.Sold = &v
 		}
 
@@ -125,7 +149,10 @@ func init() {
 	updateCmd.Flags().StringVar(&updateStartedAt, "started-at", "", "Started reading at (RFC3339); pass empty string to clear")
 	updateCmd.Flags().StringVar(&updateFinishedAt, "finished-at", "", "Finished reading at (RFC3339); pass empty string to clear")
 	updateCmd.Flags().BoolVar(&updatePriority, "priority", false, "Set priority to buy")
+	updateCmd.Flags().BoolVar(&updateNoPriority, "no-priority", false, "Clear priority to buy")
 	updateCmd.Flags().BoolVar(&updateEligibleToSell, "eligible-to-sell", false, "Set eligible to sell")
+	updateCmd.Flags().BoolVar(&updateNoEligibleToSell, "no-eligible-to-sell", false, "Clear eligible to sell")
 	updateCmd.Flags().BoolVar(&updateSold, "sold", false, "Mark as sold")
+	updateCmd.Flags().BoolVar(&updateNoSold, "no-sold", false, "Clear sold flag")
 	rootCmd.AddCommand(updateCmd)
 }

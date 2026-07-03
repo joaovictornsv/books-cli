@@ -24,8 +24,16 @@ type ListFilter struct {
 type SearchFilter struct {
 	Terms           []string
 	Author          string
+	Category        *models.Category
 	IncludeArchived bool
 	Pagination      *models.Pagination
+}
+
+type CheckFilter struct {
+	Title           string
+	Author          string
+	Exact           bool
+	IncludeArchived bool
 }
 
 type BooksResult struct {
@@ -181,6 +189,11 @@ func (r *Repository) Search(ctx context.Context, filter SearchFilter) (BooksResu
 	return r.queryBooksPage(ctx, where, args, filter.Pagination)
 }
 
+func (r *Repository) Check(ctx context.Context, filter CheckFilter) (BooksResult, error) {
+	where, args := buildCheckWhere(filter)
+	return r.queryBooksPage(ctx, where, args, nil)
+}
+
 func (r *Repository) queryBooksPage(ctx context.Context, where string, args []any, pagination *models.Pagination) (BooksResult, error) {
 	total, err := r.countBooks(ctx, where, args)
 	if err != nil {
@@ -248,6 +261,36 @@ func buildSearchWhere(filter SearchFilter) (string, []any) {
 			args = append(args, pattern, pattern)
 		}
 		query += ` AND (` + strings.Join(clauses, ` OR `) + `)`
+	}
+	if a := strings.TrimSpace(filter.Author); a != "" {
+		query += ` AND LOWER(COALESCE(author, '')) LIKE ? ESCAPE '\'`
+		args = append(args, "%"+escapeLike(strings.ToLower(a))+"%")
+	}
+	if filter.Category != nil {
+		query += ` AND category = ?`
+		args = append(args, filter.Category.String())
+	}
+	return query, args
+}
+
+func buildCheckWhere(filter CheckFilter) (string, []any) {
+	query := ""
+	args := []any{}
+
+	if !filter.IncludeArchived {
+		query += ` AND status != ?`
+		args = append(args, models.StatusArchived.String())
+	}
+	title := strings.TrimSpace(filter.Title)
+	if title != "" {
+		if filter.Exact {
+			query += ` AND LOWER(title) = LOWER(?)`
+			args = append(args, title)
+		} else {
+			pattern := "%" + escapeLike(strings.ToLower(title)) + "%"
+			query += ` AND LOWER(title) LIKE ? ESCAPE '\'`
+			args = append(args, pattern)
+		}
 	}
 	if a := strings.TrimSpace(filter.Author); a != "" {
 		query += ` AND LOWER(COALESCE(author, '')) LIKE ? ESCAPE '\'`

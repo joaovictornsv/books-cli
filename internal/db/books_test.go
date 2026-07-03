@@ -216,6 +216,131 @@ func TestRepositorySearchMultipleTerms(t *testing.T) {
 	}
 }
 
+func TestRepositorySearchCategory(t *testing.T) {
+	database, err := OpenMemory()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer database.Close()
+
+	repo := NewRepository(database)
+	ctx := context.Background()
+	fiction := models.CategoryFiction
+	history := models.CategoryHistory
+
+	_, err = repo.Create(ctx, models.Book{
+		Title:          "Dune",
+		Category:       &fiction,
+		Status:         models.StatusNotStarted,
+		PriorityToBuy:  0,
+		EligibleToSell: 0,
+		Sold:           0,
+		AddedAt:        models.NowTimestamp(),
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = repo.Create(ctx, models.Book{
+		Title:          "Sapiens",
+		Category:       &history,
+		Status:         models.StatusNotStarted,
+		PriorityToBuy:  0,
+		EligibleToSell: 0,
+		Sold:           0,
+		AddedAt:        models.NowTimestamp(),
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	results, err := repo.Search(ctx, SearchFilter{Terms: []string{"e"}, Category: &fiction})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(results.Books) != 1 || results.Books[0].Title != "Dune" {
+		t.Fatalf("expected only Dune, got %+v", results.Books)
+	}
+}
+
+func TestRepositoryCheck(t *testing.T) {
+	database, err := OpenMemory()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer database.Close()
+
+	repo := NewRepository(database)
+	ctx := context.Background()
+	author := "Frank Herbert"
+
+	_, err = repo.Create(ctx, models.Book{
+		Title:          "Dune",
+		Author:         &author,
+		Status:         models.StatusToBuy,
+		PriorityToBuy:  0,
+		EligibleToSell: 0,
+		Sold:           0,
+		AddedAt:        models.NowTimestamp(),
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = repo.Create(ctx, models.Book{
+		Title:          "Children of Dune",
+		Status:         models.StatusToBuy,
+		PriorityToBuy:  0,
+		EligibleToSell: 0,
+		Sold:           0,
+		AddedAt:        models.NowTimestamp(),
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = repo.Create(ctx, models.Book{
+		Title:          "Dune Messiah",
+		Status:         models.StatusArchived,
+		PriorityToBuy:  0,
+		EligibleToSell: 0,
+		Sold:           0,
+		AddedAt:        models.NowTimestamp(),
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	results, err := repo.Check(ctx, CheckFilter{Title: "dune"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(results.Books) != 2 {
+		t.Fatalf("expected 2 substring matches, got %d", len(results.Books))
+	}
+
+	results, err = repo.Check(ctx, CheckFilter{Title: "Dune", Exact: true})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(results.Books) != 1 || results.Books[0].Title != "Dune" {
+		t.Fatalf("expected exact Dune match, got %+v", results.Books)
+	}
+
+	results, err = repo.Check(ctx, CheckFilter{Title: "Dune", Author: "herbert"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(results.Books) != 1 {
+		t.Fatalf("expected 1 match with author filter, got %d", len(results.Books))
+	}
+
+	results, err = repo.Check(ctx, CheckFilter{Title: "Dune Messiah"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(results.Books) != 0 {
+		t.Fatalf("expected archived book excluded, got %d", len(results.Books))
+	}
+}
+
 func TestRepositoryListFilters(t *testing.T) {
 	database, err := OpenMemory()
 	if err != nil {

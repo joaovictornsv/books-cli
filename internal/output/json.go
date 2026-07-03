@@ -12,8 +12,8 @@ import (
 type JSONFormatter struct{}
 
 type booksResponse struct {
-	Books any `json:"books"`
-	Total int `json:"total"`
+	Books any  `json:"books"`
+	Total int  `json:"total"`
 	Page  *int `json:"page,omitempty"`
 	Limit *int `json:"limit,omitempty"`
 }
@@ -78,6 +78,12 @@ func (JSONFormatter) PrintStats(w io.Writer, stats models.LibraryStats) error {
 	enc := json.NewEncoder(w)
 	enc.SetIndent("", "  ")
 	return enc.Encode(payload)
+}
+
+func (JSONFormatter) PrintSchema(w io.Writer, schema models.SchemaDocument) error {
+	enc := json.NewEncoder(w)
+	enc.SetIndent("", "  ")
+	return enc.Encode(schema)
 }
 
 func (JSONFormatter) PrintBackup(w io.Writer, source, dest string) error {

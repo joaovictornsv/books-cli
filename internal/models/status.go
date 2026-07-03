@@ -8,11 +8,11 @@ import (
 type Status string
 
 const (
-	StatusRead        Status = "READ"
-	StatusReading     Status = "READING"
-	StatusNotStarted  Status = "NOT_STARTED"
-	StatusToBuy       Status = "TO_BUY"
-	StatusArchived    Status = "ARCHIVED"
+	StatusRead       Status = "READ"
+	StatusReading    Status = "READING"
+	StatusNotStarted Status = "NOT_STARTED"
+	StatusToBuy      Status = "TO_BUY"
+	StatusArchived   Status = "ARCHIVED"
 )
 
 func ParseStatus(s string) (Status, error) {

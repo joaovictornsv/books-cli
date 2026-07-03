@@ -40,3 +40,14 @@ func listFilterFromFlags(cmd *cobra.Command, status *string, category *string, p
 	}
 	return filter, nil
 }
+
+func categoryFromFlag(cmd *cobra.Command, category *string) (*models.Category, error) {
+	if !cmd.Flags().Changed("category") {
+		return nil, nil
+	}
+	parsed, err := models.ParseCategory(*category)
+	if err != nil {
+		return nil, err
+	}
+	return &parsed, nil
+}
