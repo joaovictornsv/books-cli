@@ -88,6 +88,8 @@ JSON: same list shape `{ "books": [], "total": N }`.
 | `--eligible-to-sell` | false (filter) |
 | `--page` | 1 |
 | `--limit` | 20 (max 100) |
+| `--sort` | `id` |
+| `--order` | `asc` |
 | `--fields` | none (requires `--json`) |
 
 Archived excluded unless `--status ARCHIVED`.
@@ -98,14 +100,16 @@ Allowed `--fields`: `id`, `title`, `author`, `category`, `status`, `priority_to_
 
 | Flag | Default | Notes |
 | --- | --- | --- |
-| `query` (positional) | none | Substring on title or description |
+| `query` (positional) | none | Substring on title, description, or author |
 | `--term` | none | Repeatable; all terms OR'd |
 | `--author` | none | AND filter on author substring |
 | `--category` | none | Filter by category |
 | `--page` / `--limit` | 1 / 20 | Max limit 100 |
+| `--sort` | `id` | `id`, `title`, `author`, `status`, `added_at`, `started_at`, `finished_at` |
+| `--order` | `asc` | `asc` or `desc` |
 | `--fields` | none | Requires `--json` |
 
-**At least one** positional `query` or `--term` required. Each term matches title **or** description (case-insensitive).
+**At least one** positional `query` or `--term` required. Each term matches title, description, **or** author (case-insensitive).
 
 ```bash
 books search "dune"
@@ -131,7 +135,19 @@ Destructive — permanently removes the row. **Requires `-y` with `--json`.**
 books delete 42 -y --json
 ```
 
-### `get [id]` · `config`
+### `get [id]`
+
+Provide either positional `id` or `--title`, not both.
+
+| Flag | Notes |
+| --- | --- |
+| `--title` | Case-insensitive title substring lookup |
+| `--author` | AND filter when using `--title` |
+| `--exact` | Exact title match when using `--title` |
+
+Fails with ambiguous-title error when multiple books match; narrow with `--author`, `--exact`, or use an ID.
+
+### `config`
 
 No extra flags beyond global `--json`.
 

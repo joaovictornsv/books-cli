@@ -12,6 +12,8 @@ import (
 
 var ErrNotFound = errors.New("book not found")
 
+var ErrAmbiguousTitle = errors.New("ambiguous title")
+
 type ListFilter struct {
 	Status          *models.Status
 	Category        *models.Category
@@ -19,6 +21,7 @@ type ListFilter struct {
 	EligibleToSell  *bool
 	IncludeArchived bool
 	Pagination      *models.Pagination
+	Sort            models.Sort
 }
 
 type SearchFilter struct {
@@ -27,9 +30,17 @@ type SearchFilter struct {
 	Category        *models.Category
 	IncludeArchived bool
 	Pagination      *models.Pagination
+	Sort            models.Sort
 }
 
 type CheckFilter struct {
+	Title           string
+	Author          string
+	Exact           bool
+	IncludeArchived bool
+}
+
+type TitleFilter struct {
 	Title           string
 	Author          string
 	Exact           bool
@@ -103,9 +114,45 @@ func (r *Repository) GetByID(ctx context.Context, id int64) (models.Book, error)
 	return book, nil
 }
 
+func (r *Repository) GetByTitle(ctx context.Context, filter TitleFilter) (models.Book, error) {
+	where, args := buildCheckWhere(CheckFilter{
+		Title:           filter.Title,
+		Author:          filter.Author,
+		Exact:           filter.Exact,
+		IncludeArchived: filter.IncludeArchived,
+	})
+	total, err := r.countBooks(ctx, where, args)
+	if err != nil {
+		return models.Book{}, err
+	}
+	switch total {
+	case 0:
+		return models.Book{}, ErrNotFound
+	case 1:
+		orderBy, err := models.DefaultSort().OrderByClause()
+		if err != nil {
+			return models.Book{}, err
+		}
+		query := `
+		SELECT id, title, author, category, status, priority_to_buy, eligible_to_sell, sold,
+		       notes, description, added_at, started_at, finished_at
+		FROM books WHERE 1=1` + where + orderBy + ` LIMIT 1`
+		books, err := r.queryBooks(ctx, query, args...)
+		if err != nil {
+			return models.Book{}, err
+		}
+		if len(books) == 0 {
+			return models.Book{}, ErrNotFound
+		}
+		return books[0], nil
+	default:
+		return models.Book{}, fmt.Errorf("%w: %d matches (use --author or id)", ErrAmbiguousTitle, total)
+	}
+}
+
 func (r *Repository) List(ctx context.Context, filter ListFilter) (BooksResult, error) {
 	where, args := buildListWhere(filter)
-	return r.queryBooksPage(ctx, where, args, filter.Pagination)
+	return r.queryBooksPage(ctx, where, args, filter.Pagination, filter.Sort)
 }
 
 func (r *Repository) Count(ctx context.Context, filter ListFilter) (int, error) {
@@ -186,16 +233,21 @@ func scanGroupedCounts(ctx context.Context, db *sql.DB, query string, args ...an
 
 func (r *Repository) Search(ctx context.Context, filter SearchFilter) (BooksResult, error) {
 	where, args := buildSearchWhere(filter)
-	return r.queryBooksPage(ctx, where, args, filter.Pagination)
+	return r.queryBooksPage(ctx, where, args, filter.Pagination, filter.Sort)
 }
 
 func (r *Repository) Check(ctx context.Context, filter CheckFilter) (BooksResult, error) {
 	where, args := buildCheckWhere(filter)
-	return r.queryBooksPage(ctx, where, args, nil)
+	return r.queryBooksPage(ctx, where, args, nil, models.DefaultSort())
 }
 
-func (r *Repository) queryBooksPage(ctx context.Context, where string, args []any, pagination *models.Pagination) (BooksResult, error) {
+func (r *Repository) queryBooksPage(ctx context.Context, where string, args []any, pagination *models.Pagination, sort models.Sort) (BooksResult, error) {
 	total, err := r.countBooks(ctx, where, args)
+	if err != nil {
+		return BooksResult{}, err
+	}
+
+	orderBy, err := sort.OrderByClause()
 	if err != nil {
 		return BooksResult{}, err
 	}
@@ -203,7 +255,7 @@ func (r *Repository) queryBooksPage(ctx context.Context, where string, args []an
 	query := `
 		SELECT id, title, author, category, status, priority_to_buy, eligible_to_sell, sold,
 		       notes, description, added_at, started_at, finished_at
-		FROM books WHERE 1=1` + where + ` ORDER BY id ASC`
+		FROM books WHERE 1=1` + where + orderBy
 
 	queryArgs := append([]any{}, args...)
 	if pagination != nil && pagination.Enabled() {
@@ -257,8 +309,8 @@ func buildSearchWhere(filter SearchFilter) (string, []any) {
 		clauses := make([]string, len(terms))
 		for i, term := range terms {
 			pattern := "%" + escapeLike(strings.ToLower(term)) + "%"
-			clauses[i] = `(LOWER(title) LIKE ? ESCAPE '\' OR LOWER(COALESCE(description, '')) LIKE ? ESCAPE '\')`
-			args = append(args, pattern, pattern)
+			clauses[i] = `(LOWER(title) LIKE ? ESCAPE '\' OR LOWER(COALESCE(description, '')) LIKE ? ESCAPE '\' OR LOWER(COALESCE(author, '')) LIKE ? ESCAPE '\')`
+			args = append(args, pattern, pattern, pattern)
 		}
 		query += ` AND (` + strings.Join(clauses, ` OR `) + `)`
 	}
@@ -509,3 +561,4 @@ func escapeLike(s string) string {
 	s = strings.ReplaceAll(s, `_`, `\_`)
 	return s
 }
+

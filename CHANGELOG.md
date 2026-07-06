@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-07-06
+
+### Added
+
+- `--sort` and `--order` flags on `list` and `search` (fields: `id`, `title`, `author`, `status`, `added_at`, `started_at`, `finished_at`)
+- `search` `--term` now matches author in addition to title and description (`--author` remains an AND filter)
+- `get --title` to look up a book by title (`--exact`, `--author` for disambiguation)
+
 ## [0.3.0] - 2026-07-03
 
 ### Added

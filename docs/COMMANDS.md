@@ -68,23 +68,37 @@ Returns a single book object.
 
 ## `get`
 
-Show one book by ID.
+Show one book by ID or by title.
 
 ```bash
 books get 42
 books get 42 --json
+books get --title "Dune" --json
+books get --title "Dune" --exact --author "herbert" --json
 ```
+
+Provide either a positional `id` or `--title`, not both.
 
 ### Arguments
 
 | Argument | Description |
 | --- | --- |
-| `id` | Positive integer book ID |
+| `id` | Positive integer book ID (optional when using `--title`) |
+
+### Flags
+
+| Flag | Default | Description |
+| --- | --- | --- |
+| `--title` | _(none)_ | Case-insensitive title substring lookup |
+| `--author` | _(none)_ | AND filter on author substring when using `--title` |
+| `--exact` | `false` | Case-insensitive exact title match when using `--title` |
+
+When multiple books match `--title`, the command fails with an ambiguous-title error; narrow with `--author`, `--exact`, or use an ID.
 
 ### Exit codes
 
 - `0` on success
-- `1` if the book is not found or the ID is invalid
+- `1` if the book is not found, the ID is invalid, or the title is ambiguous
 
 ## `list`
 
@@ -97,6 +111,7 @@ books list --status TO_BUY --priority
 books list --category FICTION
 books list --eligible-to-sell
 books list --page 2 --limit 20
+books list --status READ --sort finished_at --order desc --limit 10
 books list --json
 books list --json --fields id,title,status
 ```
@@ -111,6 +126,8 @@ books list --json --fields id,title,status
 | `--eligible-to-sell` | `false` | Only books with `eligible_to_sell = 1` |
 | `--page` | `1` | Page number (1-based); used with `--limit` |
 | `--limit` | `20` | Results per page; used with `--page` |
+| `--sort` | `id` | Sort field: `id`, `title`, `author`, `status`, `added_at`, `started_at`, `finished_at` |
+| `--order` | `asc` | Sort order: `asc` or `desc` |
 | `--fields` | _(none)_ | Comma-separated book fields to return (requires `--json`) |
 
 Pagination applies when either `--page` or `--limit` is passed. If only one is set, the other defaults to `page=1` or `limit=20`.
@@ -145,15 +162,17 @@ With `--fields`, each item in `books` contains only the requested keys (in the o
 
 ## `search`
 
-Search books by title or description substring (case-insensitive). Optionally filter by author substring.
+Search books by title, description, or author substring (case-insensitive). Optionally filter by author substring with `--author` (AND).
 
-Pass a positional `query` and/or repeatable `--term` flags. Multiple terms are OR'd — a book matches if any term appears in title or description.
+Pass a positional `query` and/or repeatable `--term` flags. Multiple terms are OR'd — a book matches if any term appears in title, description, or author.
 
 ```bash
 books search "le guin"
 books search --term hobbit --term "o hobbit"
+books search --term herbert
 books search "dune" --author "herbert"
 books search --term senhor --term lord --author "tolkien" --page 1 --limit 10
+books search "dune" --sort title --order asc --json
 books search "dune" --author "herbert" --category FICTION --json
 books search "dune" --json --fields id,title,author
 ```
@@ -162,17 +181,19 @@ books search "dune" --json --fields id,title,author
 
 | Argument | Description |
 | --- | --- |
-| `query` | Optional substring to match against title or description |
+| `query` | Optional substring to match against title, description, or author |
 
 ### Flags
 
 | Flag | Default | Description |
 | --- | --- | --- |
-| `--term` | _(none)_ | Search term substring (repeatable; terms are OR'd across title/description) |
-| `--author` | _(none)_ | Substring to match against author (case-insensitive) |
+| `--term` | _(none)_ | Search term substring (repeatable; terms are OR'd across title/description/author) |
+| `--author` | _(none)_ | AND filter on author substring (case-insensitive) |
 | `--category` | _(none)_ | Filter by category |
 | `--page` | `1` | Page number (1-based); used with `--limit` |
 | `--limit` | `20` | Results per page; used with `--page` |
+| `--sort` | `id` | Sort field: `id`, `title`, `author`, `status`, `added_at`, `started_at`, `finished_at` |
+| `--order` | `asc` | Sort order: `asc` or `desc` |
 | `--fields` | _(none)_ | Comma-separated book fields to return (requires `--json`) |
 
 Archived books are excluded from results.

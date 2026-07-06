@@ -14,6 +14,8 @@ var (
 	listEligibleToSell bool
 	listPage           int
 	listLimit          int
+	listSort           string
+	listOrder          string
 )
 
 var listCmd = &cobra.Command{
@@ -31,6 +33,12 @@ var listCmd = &cobra.Command{
 		}
 		filter.Pagination = pagination
 
+		sort, err := sortFromFlags(&listSort, &listOrder)
+		if err != nil {
+			return err
+		}
+		filter.Sort = sort
+
 		return runWithRepo(cmd.Context(), func(ctx context.Context, repo *db.Repository) error {
 			result, err := repo.List(ctx, filter)
 			if err != nil {
@@ -44,6 +52,7 @@ var listCmd = &cobra.Command{
 func init() {
 	addListFilterFlags(listCmd, &listStatus, &listCategory, &listPriority, &listEligibleToSell)
 	addPaginationFlags(listCmd, &listPage, &listLimit)
+	addSortFlags(listCmd, &listSort, &listOrder)
 	addFieldsFlag(listCmd)
 	rootCmd.AddCommand(listCmd)
 }

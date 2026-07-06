@@ -280,6 +280,74 @@ func TestCheckJSONOutput(t *testing.T) {
 	}
 }
 
+func TestGetByTitleJSONOutput(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	t.Setenv("USERPROFILE", home)
+	dbPath := filepath.Join(home, "books.db")
+	t.Setenv("BOOKS_DB", dbPath)
+
+	var buf bytes.Buffer
+	rootCmd.SetOut(&buf)
+	rootCmd.SetErr(&buf)
+	rootCmd.SetArgs([]string{"add", "Dune", "--author", "Frank Herbert", "--json"})
+	if err := rootCmd.Execute(); err != nil {
+		t.Fatal(err)
+	}
+
+	buf.Reset()
+	rootCmd.SetArgs([]string{"get", "--title", "Dune", "--exact", "--json"})
+	if err := rootCmd.Execute(); err != nil {
+		t.Fatal(err)
+	}
+
+	var resp struct {
+		Title string `json:"title"`
+	}
+	if err := json.Unmarshal(buf.Bytes(), &resp); err != nil {
+		t.Fatalf("decode get JSON: %v\noutput: %s", err, buf.String())
+	}
+	if resp.Title != "Dune" {
+		t.Fatalf("unexpected title: %+v", resp)
+	}
+}
+
+func TestGetByTitleAmbiguousError(t *testing.T) {
+	getTitle = ""
+	getAuthor = ""
+	getExact = false
+
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	t.Setenv("USERPROFILE", home)
+	dbPath := filepath.Join(home, "books.db")
+	t.Setenv("BOOKS_DB", dbPath)
+
+	var buf bytes.Buffer
+	rootCmd.SetOut(&buf)
+	rootCmd.SetErr(&buf)
+	rootCmd.SetArgs([]string{"add", "Dune", "--json"})
+	if err := rootCmd.Execute(); err != nil {
+		t.Fatal(err)
+	}
+
+	buf.Reset()
+	rootCmd.SetArgs([]string{"add", "Children of Dune", "--json"})
+	if err := rootCmd.Execute(); err != nil {
+		t.Fatal(err)
+	}
+
+	buf.Reset()
+	rootCmd.SetArgs([]string{"get", "--title", "dune"})
+	err := rootCmd.Execute()
+	if err == nil {
+		t.Fatal("expected ambiguous title error")
+	}
+	if !strings.Contains(err.Error(), "ambiguous title") {
+		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
 func TestDeleteRequiresYesWithJSON(t *testing.T) {
 	home := t.TempDir()
 	t.Setenv("HOME", home)
