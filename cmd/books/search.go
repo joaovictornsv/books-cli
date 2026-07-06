@@ -50,7 +50,7 @@ with OR (a book matches if any term hits title, description, or author).`,
 		}
 		filter.Pagination = pagination
 
-		sort, err := sortFromFlags(cmd, &searchSort, &searchOrder)
+		sort, err := sortFromFlags(&searchSort, &searchOrder)
 		if err != nil {
 			return err
 		}

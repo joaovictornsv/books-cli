@@ -18,7 +18,7 @@ func newSortCmd(t *testing.T) (*cobra.Command, *string, *string) {
 func TestSortFromFlags(t *testing.T) {
 	cmd, sort, order := newSortCmd(t)
 
-	got, err := sortFromFlags(cmd, sort, order)
+	got, err := sortFromFlags(sort, order)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -33,7 +33,7 @@ func TestSortFromFlags(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	got, err = sortFromFlags(cmd, sort, order)
+	got, err = sortFromFlags(sort, order)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -47,7 +47,7 @@ func TestSortFromFlagsInvalid(t *testing.T) {
 	if err := cmd.Flags().Set("sort", "bad"); err != nil {
 		t.Fatal(err)
 	}
-	_, err := sortFromFlags(cmd, sort, order)
+	_, err := sortFromFlags(sort, order)
 	if err == nil {
 		t.Fatal("expected error for invalid sort field")
 	}

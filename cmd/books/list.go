@@ -33,7 +33,7 @@ var listCmd = &cobra.Command{
 		}
 		filter.Pagination = pagination
 
-		sort, err := sortFromFlags(cmd, &listSort, &listOrder)
+		sort, err := sortFromFlags(&listSort, &listOrder)
 		if err != nil {
 			return err
 		}

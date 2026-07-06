@@ -63,7 +63,7 @@ func handleRepoError(err error) error {
 		return fmt.Errorf("book not found")
 	}
 	if errors.Is(err, db.ErrAmbiguousTitle) {
-		return err
+		return fmt.Errorf("ambiguous title: multiple books match (use --author, --exact, or id)")
 	}
 	return err
 }

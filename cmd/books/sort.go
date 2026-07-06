@@ -10,7 +10,7 @@ func addSortFlags(cmd *cobra.Command, sort, order *string) {
 	cmd.Flags().StringVar(order, "order", string(models.SortOrderAsc), "Sort order (asc or desc)")
 }
 
-func sortFromFlags(cmd *cobra.Command, sort, order *string) (models.Sort, error) {
+func sortFromFlags(sort, order *string) (models.Sort, error) {
 	field, err := models.ParseSortField(*sort)
 	if err != nil {
 		return models.Sort{}, err
