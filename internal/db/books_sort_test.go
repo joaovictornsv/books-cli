@@ -46,6 +46,47 @@ func TestRepositoryListSort(t *testing.T) {
 	}
 }
 
+func TestRepositoryListSortFinishedAt(t *testing.T) {
+	database, err := OpenMemory()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer database.Close()
+
+	repo := NewRepository(database)
+	ctx := context.Background()
+
+	finishedEarly := "2024-01-01T00:00:00Z"
+	finishedLate := "2025-01-01T00:00:00Z"
+	for _, book := range []models.Book{
+		{Title: "No Date", Status: models.StatusRead, PriorityToBuy: 0, EligibleToSell: 0, Sold: 0, AddedAt: models.NowTimestamp()},
+		{Title: "Early", Status: models.StatusRead, PriorityToBuy: 0, EligibleToSell: 0, Sold: 0, AddedAt: models.NowTimestamp(), FinishedAt: &finishedEarly},
+		{Title: "Late", Status: models.StatusRead, PriorityToBuy: 0, EligibleToSell: 0, Sold: 0, AddedAt: models.NowTimestamp(), FinishedAt: &finishedLate},
+	} {
+		if _, err = repo.Create(ctx, book); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	result, err := repo.List(ctx, ListFilter{
+		Status: ptrStatus(models.StatusRead),
+		Sort:   models.Sort{Field: models.SortFieldFinishedAt, Order: models.SortOrderDesc},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(result.Books) != 3 {
+		t.Fatalf("expected 3 books, got %d", len(result.Books))
+	}
+	if result.Books[0].Title != "Late" || result.Books[1].Title != "Early" || result.Books[2].Title != "No Date" {
+		t.Fatalf("unexpected order: %+v", result.Books)
+	}
+}
+
+func ptrStatus(s models.Status) *models.Status {
+	return &s
+}
+
 func TestRepositorySearchAuthorTerm(t *testing.T) {
 	database, err := OpenMemory()
 	if err != nil {

@@ -115,23 +115,38 @@ func (r *Repository) GetByID(ctx context.Context, id int64) (models.Book, error)
 }
 
 func (r *Repository) GetByTitle(ctx context.Context, filter TitleFilter) (models.Book, error) {
-	check := CheckFilter{
+	where, args := buildCheckWhere(CheckFilter{
 		Title:           filter.Title,
 		Author:          filter.Author,
 		Exact:           filter.Exact,
 		IncludeArchived: filter.IncludeArchived,
-	}
-	result, err := r.Check(ctx, check)
+	})
+	total, err := r.countBooks(ctx, where, args)
 	if err != nil {
 		return models.Book{}, err
 	}
-	switch result.Total {
+	switch total {
 	case 0:
 		return models.Book{}, ErrNotFound
 	case 1:
-		return result.Books[0], nil
+		orderBy, err := models.DefaultSort().OrderByClause()
+		if err != nil {
+			return models.Book{}, err
+		}
+		query := `
+		SELECT id, title, author, category, status, priority_to_buy, eligible_to_sell, sold,
+		       notes, description, added_at, started_at, finished_at
+		FROM books WHERE 1=1` + where + orderBy + ` LIMIT 1`
+		books, err := r.queryBooks(ctx, query, args...)
+		if err != nil {
+			return models.Book{}, err
+		}
+		if len(books) == 0 {
+			return models.Book{}, ErrNotFound
+		}
+		return books[0], nil
 	default:
-		return models.Book{}, fmt.Errorf("%w: %d matches (use --author or id)", ErrAmbiguousTitle, result.Total)
+		return models.Book{}, fmt.Errorf("%w: %d matches (use --author or id)", ErrAmbiguousTitle, total)
 	}
 }
 
@@ -232,10 +247,15 @@ func (r *Repository) queryBooksPage(ctx context.Context, where string, args []an
 		return BooksResult{}, err
 	}
 
+	orderBy, err := sort.OrderByClause()
+	if err != nil {
+		return BooksResult{}, err
+	}
+
 	query := `
 		SELECT id, title, author, category, status, priority_to_buy, eligible_to_sell, sold,
 		       notes, description, added_at, started_at, finished_at
-		FROM books WHERE 1=1` + where + buildOrderBy(sort)
+		FROM books WHERE 1=1` + where + orderBy
 
 	queryArgs := append([]any{}, args...)
 	if pagination != nil && pagination.Enabled() {
@@ -542,13 +562,3 @@ func escapeLike(s string) string {
 	return s
 }
 
-func buildOrderBy(sort models.Sort) string {
-	s := sort.WithDefaults()
-	column := string(s.Field)
-	order := strings.ToUpper(string(s.Order))
-	clause := column + ` ` + order
-	if s.Field.Nullable() {
-		clause += ` NULLS LAST`
-	}
-	return ` ORDER BY ` + clause
-}

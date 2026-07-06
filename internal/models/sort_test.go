@@ -44,3 +44,45 @@ func TestSortWithDefaults(t *testing.T) {
 		t.Fatalf("got %+v", got)
 	}
 }
+
+func TestSortOrderByClause(t *testing.T) {
+	tests := []struct {
+		name    string
+		sort    Sort
+		want    string
+		wantErr bool
+	}{
+		{
+			name: "title asc",
+			sort: Sort{Field: SortFieldTitle, Order: SortOrderAsc},
+			want: " ORDER BY title ASC",
+		},
+		{
+			name: "finished_at desc nulls last",
+			sort: Sort{Field: SortFieldFinishedAt, Order: SortOrderDesc},
+			want: " ORDER BY finished_at DESC NULLS LAST",
+		},
+		{
+			name:    "invalid field",
+			sort:    Sort{Field: "bad", Order: SortOrderAsc},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := tt.sort.OrderByClause()
+			if tt.wantErr {
+				if err == nil {
+					t.Fatal("expected error")
+				}
+				return
+			}
+			if err != nil {
+				t.Fatal(err)
+			}
+			if got != tt.want {
+				t.Fatalf("got %q, want %q", got, tt.want)
+			}
+		})
+	}
+}

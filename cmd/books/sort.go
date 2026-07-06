@@ -19,9 +19,5 @@ func sortFromFlags(cmd *cobra.Command, sort, order *string) (models.Sort, error)
 	if err != nil {
 		return models.Sort{}, err
 	}
-	s := models.Sort{Field: field, Order: sortOrder}
-	if err := s.Validate(); err != nil {
-		return models.Sort{}, err
-	}
-	return s, nil
+	return models.Sort{Field: field, Order: sortOrder}, nil
 }

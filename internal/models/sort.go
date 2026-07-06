@@ -89,3 +89,15 @@ func (f SortField) Nullable() bool {
 		return false
 	}
 }
+
+func (s Sort) OrderByClause() (string, error) {
+	s = s.WithDefaults()
+	if err := s.Validate(); err != nil {
+		return "", err
+	}
+	clause := string(s.Field) + " " + strings.ToUpper(string(s.Order))
+	if s.Field.Nullable() {
+		clause += " NULLS LAST"
+	}
+	return " ORDER BY " + clause, nil
+}
