@@ -14,7 +14,7 @@ import (
 
 var (
 	jsonOutput bool
-	version    = "0.3.0"
+	version    = "0.4.0"
 )
 
 var rootCmd = &cobra.Command{
@@ -61,6 +61,9 @@ func parseID(arg string) (int64, error) {
 func handleRepoError(err error) error {
 	if errors.Is(err, db.ErrNotFound) {
 		return fmt.Errorf("book not found")
+	}
+	if errors.Is(err, db.ErrAmbiguousTitle) {
+		return err
 	}
 	return err
 }

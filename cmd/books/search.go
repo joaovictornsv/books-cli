@@ -15,15 +15,17 @@ var (
 	searchCategory string
 	searchPage     int
 	searchLimit    int
+	searchSort     string
+	searchOrder    string
 )
 
 var searchCmd = &cobra.Command{
 	Use:   "search [query]",
-	Short: "Search books by title, description, and optional author",
-	Long: `Search books by case-insensitive substring in title or description.
+	Short: "Search books by title, description, author, and optional filters",
+	Long: `Search books by case-insensitive substring in title, description, or author.
 
 Pass a positional query and/or repeatable --term flags. Multiple terms are combined
-with OR (a book matches if any term hits title or description).`,
+with OR (a book matches if any term hits title, description, or author).`,
 	Args: cobra.MaximumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		terms, err := collectSearchTerms(args, searchTerms)
@@ -47,6 +49,12 @@ with OR (a book matches if any term hits title or description).`,
 			return err
 		}
 		filter.Pagination = pagination
+
+		sort, err := sortFromFlags(cmd, &searchSort, &searchOrder)
+		if err != nil {
+			return err
+		}
+		filter.Sort = sort
 
 		return runWithRepo(cmd.Context(), func(ctx context.Context, repo *db.Repository) error {
 			result, err := repo.Search(ctx, filter)
@@ -81,6 +89,7 @@ func init() {
 	searchCmd.Flags().StringVar(&searchAuthor, "author", "", "Filter by author substring")
 	searchCmd.Flags().StringVar(&searchCategory, "category", "", "Filter by category")
 	addPaginationFlags(searchCmd, &searchPage, &searchLimit)
+	addSortFlags(searchCmd, &searchSort, &searchOrder)
 	addFieldsFlag(searchCmd)
 	rootCmd.AddCommand(searchCmd)
 }

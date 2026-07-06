@@ -13,9 +13,9 @@ books search "le guin" --json
 | Command | Description |
 | --- | --- |
 | `add` | Add a book |
-| `get` | Show one book by ID |
-| `list` | List books with filters and pagination |
-| `search` | Search by title or description |
+| `get` | Show one book by ID or title |
+| `list` | List books with filters, sorting, and pagination |
+| `search` | Search by title, description, or author |
 | `check` | Find likely duplicates by title before adding |
 | `update` | Update fields or reading status (including `--status ARCHIVED`) |
 | `delete` | Permanently remove a book |

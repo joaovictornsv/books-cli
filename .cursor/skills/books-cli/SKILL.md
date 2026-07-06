@@ -70,7 +70,7 @@ After success, show id, title, author, category, status, priority (Yes/No), desc
 
 Pagination is always on (`page=1`, `limit=20`, max `100`). Never assume one page is the full set — check `total` vs `len(books)`.
 
-The DB mixes **pt-BR and English** titles/descriptions. Search is case-insensitive substring match on title or description; it does not translate. Use multiple `--term` flags (OR) for language variants in one query — details in [reference.md](reference.md#search-query).
+The DB mixes **pt-BR and English** titles/descriptions. Search is case-insensitive substring match on title, description, or author; it does not translate. Use multiple `--term` flags (OR) for language variants in one query — details in [reference.md](reference.md#search-query).
 
 **Smaller payloads:** pass `--fields id,title,status` (requires `--json`) on `list` or `search`.
 
@@ -79,8 +79,8 @@ The DB mixes **pt-BR and English** titles/descriptions. Search is case-insensiti
 **Workflow:** Run `search` or `list` with `--json` → read `total`, `page`, `limit`, `books` → if `total > limit`, show current page and `Page X of Y (N total)`; fetch more pages only when needed.
 
 ```bash
-books list [--status STATUS] [--category CATEGORY] [--priority] [--eligible-to-sell] --page 1 --limit 20 [--fields id,title,status] --json
-books search [--term "<term>" ...] ["<query>"] [--author "<author>"] [--category CATEGORY] --page 1 --limit 20 [--fields id,title,status] --json
+books list [--status STATUS] [--category CATEGORY] [--priority] [--eligible-to-sell] [--sort FIELD] [--order asc|desc] --page 1 --limit 20 [--fields id,title,status] --json
+books search [--term "<term>" ...] ["<query>"] [--author "<author>"] [--category CATEGORY] [--sort FIELD] [--order asc|desc] --page 1 --limit 20 [--fields id,title,status] --json
 ```
 
 Present list/search results as a table: ID, Title, Author, Category, Status, Priority (`Y` or `-` for booleans).
@@ -89,7 +89,7 @@ Present list/search results as a table: ID, Title, Author, Category, Status, Pri
 
 | Intent | Command |
 | --- | --- |
-| View one book | `books get <id> --json` |
+| View one book | `books get <id> --json` or `books get --title "<title>" [--exact] [--author "..."] --json` |
 | Update fields | `books update <id> --status READ [--category FICTION] ... --json` |
 | Clear booleans | `books update <id> --no-priority` / `--no-eligible-to-sell` / `--no-sold --json` |
 | Remove from active lists | `books update <id> --status ARCHIVED --json` |
@@ -102,4 +102,4 @@ Status/category enums and JSON fields: [reference.md](reference.md). Phrase exam
 
 ## Errors
 
-Exit `0` = success; `1` = validation, not found, or DB error. Common: invalid status/category, bad page/limit, missing update flags, unknown ID, no search terms, `delete` without `-y` when using `--json`. If `books` missing: `go install ./cmd/books` or build `./books`.
+Exit `0` = success; `1` = validation, not found, or DB error. Common: invalid status/category, bad page/limit, missing update flags, unknown ID, ambiguous title on `get --title`, no search terms, `delete` without `-y` when using `--json`. If `books` missing: `go install ./cmd/books` or build `./books`.

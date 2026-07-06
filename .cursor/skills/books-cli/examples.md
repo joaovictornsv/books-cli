@@ -34,6 +34,7 @@ books search --term hobbit --term "o hobbit" --json
 | "Tenho O Senhor dos Anéis?" | `books search --term senhor --term lord --author "tolkien" --json` |
 | "Books about Arrakis" | `books search "arrakis" --json` |
 | "Find books by Le Guin" | `books search "guin" --json` |
+| "Find books by Herbert" | `books search --term herbert --json` |
 | "Hobbit or Dune" | `books search --term hobbit --term dune --json` |
 | "Dune by Herbert" | `books search "dune" --author "herbert" --json` |
 
@@ -47,6 +48,7 @@ books search --term hobbit --term "o hobbit" --json
 | "Priority books to buy" | `books list --status TO_BUY --priority --json` |
 | "Books I haven't started" | `books list --status NOT_STARTED --json` |
 | "All my books" | `books list --json` — paginate if `total > limit` |
+| "Recently finished" | `books list --status READ --sort finished_at --order desc --limit 10 --json` |
 | "Compact wishlist" | `books list --status TO_BUY --fields id,title,status --json` |
 
 ## Update & other
@@ -58,6 +60,7 @@ books search --term hobbit --term "o hobbit" --json
 | "Start reading book 7" | `books update 7 --status READING --started-at "<RFC3339>" --json` |
 | "Remove priority from book 3" | `books update 3 --no-priority --json` |
 | "Show book 42" | `books get 42 --json` |
+| "Show Dune" | `books get --title "Dune" --exact --json` |
 | "Remove book 42 from my list" | `books update 42 --status ARCHIVED --json` |
 | "Delete book 42 permanently" | `books delete 42 -y --json` |
 | "What statuses exist?" | `books schema --json` |
