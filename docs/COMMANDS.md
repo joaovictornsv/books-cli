@@ -208,6 +208,7 @@ Update one or more fields on an existing book. Only flags you pass are changed.
 
 ```bash
 books update 42 --status READ
+books update --ids 1,2,3 --status READ --json
 books update 42 --status TO_BUY --priority --eligible-to-sell
 books update 42 --notes "Borrowed from library"
 books update 42 --description "Epic science fiction saga set on Arrakis."
@@ -224,12 +225,13 @@ Prefer `--no-priority`, `--no-eligible-to-sell`, and `--no-sold` to clear boolea
 
 | Argument | Description |
 | --- | --- |
-| `id` | Positive integer book ID |
+| `id` | Positive integer book ID (use this **or** `--ids`, not both) |
 
 ### Flags
 
 | Flag | Description |
 | --- | --- |
+| `--ids` | Comma-separated book IDs for bulk update (e.g. `1,2,3`) |
 | `--title` | New title |
 | `--author` | New author |
 | `--status` | New status |
@@ -245,6 +247,17 @@ Prefer `--no-priority`, `--no-eligible-to-sell`, and `--no-sold` to clear boolea
 | `--no-sold` | Clear `sold` |
 
 Status changes do not modify `started_at` or `finished_at`. Set those timestamps explicitly with the flags above.
+
+### Bulk update JSON output
+
+When updating multiple books with `--ids` and `--json`:
+
+```json
+{
+  "updated": [ { "id": 1, "title": "...", "status": "READ" } ],
+  "count": 3
+}
+```
 
 ## `delete`
 
@@ -428,6 +441,65 @@ Uses the resolved database path from `books config`. Fails if the source databas
 {
   "source": "/home/user/.local/share/books/books.db",
   "output": "/path/to/books-backup.db"
+}
+```
+
+## `export`
+
+Dump the library to a structured JSON or CSV file. Complements `backup` (raw database copy) with human-editable data.
+
+```bash
+books export --format json --output books.json
+books export --format csv --output books.csv
+books export --format json --output - --json
+```
+
+### Flags
+
+| Flag | Default | Description |
+| --- | --- | --- |
+| `--format` | _(required)_ | `json` or `csv` |
+| `--output` | _(required)_ | Destination file path, or `-` for stdout |
+| `--include-archived` | `false` | Include archived books |
+
+### JSON output
+
+When `--output` is a file path (not `-`), confirmation JSON:
+
+```json
+{
+  "output": "books.json",
+  "format": "json",
+  "total": 42
+}
+```
+
+Exported JSON uses the same book shape as `list` / `get`, wrapped as `{ "books": [], "total": N }`.
+
+## `import`
+
+Load books from a JSON or CSV file. Upserts by `id`: updates existing rows, inserts new ones. Use `--dry-run` to validate without writing.
+
+```bash
+books import --input books.json
+books import --input books.csv --dry-run --json
+```
+
+### Flags
+
+| Flag | Default | Description |
+| --- | --- | --- |
+| `--input` | _(required)_ | Source file path (`.json` or `.csv`) |
+| `--dry-run` | `false` | Validate and report counts without modifying the database |
+
+### JSON output
+
+```json
+{
+  "created": 2,
+  "updated": 5,
+  "total": 7,
+  "dry_run": false
 }
 ```
 

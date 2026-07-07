@@ -360,16 +360,101 @@ func (r *Repository) countBooks(ctx context.Context, where string, args []any) (
 	return total, nil
 }
 
+type querier interface {
+	ExecContext(ctx context.Context, query string, args ...any) (sql.Result, error)
+	QueryRowContext(ctx context.Context, query string, args ...any) *sql.Row
+}
+
 func (r *Repository) Update(ctx context.Context, id int64, patch models.BookPatch) (models.Book, error) {
+	return updateWithQuerier(ctx, r.db.sql, id, patch)
+}
+
+func (r *Repository) UpdateMany(ctx context.Context, ids []int64, patch models.BookPatch) ([]models.Book, error) {
+	if err := patch.Validate(); err != nil {
+		return nil, err
+	}
+	if len(ids) == 0 {
+		return nil, fmt.Errorf("at least one id is required")
+	}
+
+	tx, err := r.db.sql.BeginTx(ctx, nil)
+	if err != nil {
+		return nil, fmt.Errorf("begin transaction: %w", err)
+	}
+	defer tx.Rollback()
+
+	updated := make([]models.Book, 0, len(ids))
+	for _, id := range ids {
+		book, err := updateWithQuerier(ctx, tx, id, patch)
+		if err != nil {
+			return nil, err
+		}
+		updated = append(updated, book)
+	}
+
+	if err := tx.Commit(); err != nil {
+		return nil, fmt.Errorf("commit transaction: %w", err)
+	}
+	return updated, nil
+}
+
+func updateWithQuerier(ctx context.Context, q querier, id int64, patch models.BookPatch) (models.Book, error) {
 	if err := patch.Validate(); err != nil {
 		return models.Book{}, err
 	}
 
-	current, err := r.GetByID(ctx, id)
+	current, err := getByIDWithQuerier(ctx, q, id)
 	if err != nil {
 		return models.Book{}, err
 	}
 
+	updated := applyPatch(current, patch)
+	if err := updated.Validate(); err != nil {
+		return models.Book{}, err
+	}
+
+	_, err = q.ExecContext(ctx, `
+		UPDATE books SET
+			title = ?, author = ?, category = ?, status = ?, priority_to_buy = ?, eligible_to_sell = ?,
+			sold = ?, notes = ?, description = ?, started_at = ?, finished_at = ?
+		WHERE id = ?`,
+		updated.Title,
+		nullString(updated.Author),
+		nullCategory(updated.Category),
+		updated.Status.String(),
+		updated.PriorityToBuy,
+		updated.EligibleToSell,
+		updated.Sold,
+		nullString(updated.Notes),
+		nullString(updated.Description),
+		nullString(updated.StartedAt),
+		nullString(updated.FinishedAt),
+		id,
+	)
+	if err != nil {
+		return models.Book{}, fmt.Errorf("update book: %w", err)
+	}
+
+	return getByIDWithQuerier(ctx, q, id)
+}
+
+func getByIDWithQuerier(ctx context.Context, q querier, id int64) (models.Book, error) {
+	row := q.QueryRowContext(ctx, `
+		SELECT id, title, author, category, status, priority_to_buy, eligible_to_sell, sold,
+		       notes, description, added_at, started_at, finished_at
+		FROM books WHERE id = ?`, id)
+
+	book, err := scanBook(row)
+	if errors.Is(err, sql.ErrNoRows) {
+		return models.Book{}, ErrNotFound
+	}
+	if err != nil {
+		return models.Book{}, err
+	}
+	return book, nil
+}
+
+func applyPatch(current models.Book, patch models.BookPatch) models.Book {
 	updated := current
 	if patch.Title != nil {
 		updated.Title = *patch.Title
@@ -412,34 +497,7 @@ func (r *Repository) Update(ctx context.Context, id int64, patch models.BookPatc
 	} else if patch.ClearFinishedAt {
 		updated.FinishedAt = nil
 	}
-
-	if err := updated.Validate(); err != nil {
-		return models.Book{}, err
-	}
-
-	_, err = r.db.sql.ExecContext(ctx, `
-		UPDATE books SET
-			title = ?, author = ?, category = ?, status = ?, priority_to_buy = ?, eligible_to_sell = ?,
-			sold = ?, notes = ?, description = ?, started_at = ?, finished_at = ?
-		WHERE id = ?`,
-		updated.Title,
-		nullString(updated.Author),
-		nullCategory(updated.Category),
-		updated.Status.String(),
-		updated.PriorityToBuy,
-		updated.EligibleToSell,
-		updated.Sold,
-		nullString(updated.Notes),
-		nullString(updated.Description),
-		nullString(updated.StartedAt),
-		nullString(updated.FinishedAt),
-		id,
-	)
-	if err != nil {
-		return models.Book{}, fmt.Errorf("update book: %w", err)
-	}
-
-	return r.GetByID(ctx, id)
+	return updated
 }
 
 func (r *Repository) Delete(ctx context.Context, id int64) (models.Book, error) {

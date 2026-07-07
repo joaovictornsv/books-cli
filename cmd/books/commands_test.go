@@ -379,3 +379,133 @@ func TestDeleteRequiresYesWithJSON(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestBulkUpdateJSONOutput(t *testing.T) {
+	resetUpdateCommandFlags(t)
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	t.Setenv("USERPROFILE", home)
+	dbPath := filepath.Join(home, "books.db")
+	t.Setenv("BOOKS_DB", dbPath)
+
+	var buf bytes.Buffer
+	rootCmd.SetOut(&buf)
+	rootCmd.SetErr(&buf)
+	rootCmd.SetArgs([]string{"add", "Dune", "--json"})
+	if err := rootCmd.Execute(); err != nil {
+		t.Fatal(err)
+	}
+
+	buf.Reset()
+	rootCmd.SetArgs([]string{"add", "Foundation", "--json"})
+	if err := rootCmd.Execute(); err != nil {
+		t.Fatal(err)
+	}
+
+	buf.Reset()
+	rootCmd.SetArgs([]string{"update", "--ids", "1,2", "--status", "READ", "--json"})
+	if err := rootCmd.Execute(); err != nil {
+		t.Fatal(err)
+	}
+
+	var resp struct {
+		Count   int `json:"count"`
+		Updated []struct {
+			Status string `json:"status"`
+		} `json:"updated"`
+	}
+	if err := json.Unmarshal(buf.Bytes(), &resp); err != nil {
+		t.Fatalf("decode bulk update JSON: %v\noutput: %s", err, buf.String())
+	}
+	if resp.Count != 2 || len(resp.Updated) != 2 {
+		t.Fatalf("unexpected bulk update JSON: %+v", resp)
+	}
+	for _, book := range resp.Updated {
+		if book.Status != "READ" {
+			t.Fatalf("expected READ status, got %q", book.Status)
+		}
+	}
+}
+
+func TestExportImportRoundTripCLI(t *testing.T) {
+	resetUpdateCommandFlags(t)
+	getTitle = ""
+	getAuthor = ""
+	getExact = false
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	t.Setenv("USERPROFILE", home)
+	dbPath := filepath.Join(home, "books.db")
+	t.Setenv("BOOKS_DB", dbPath)
+	exportPath := filepath.Join(home, "books.json")
+
+	var buf bytes.Buffer
+	rootCmd.SetOut(&buf)
+	rootCmd.SetErr(&buf)
+	rootCmd.SetArgs([]string{"add", "Dune", "--status", "TO_BUY", "--json"})
+	if err := rootCmd.Execute(); err != nil {
+		t.Fatal(err)
+	}
+
+	buf.Reset()
+	rootCmd.SetArgs([]string{"export", "--format", "json", "--output", exportPath, "--json"})
+	if err := rootCmd.Execute(); err != nil {
+		t.Fatal(err)
+	}
+
+	var exportResp struct {
+		Total int `json:"total"`
+	}
+	if err := json.Unmarshal(buf.Bytes(), &exportResp); err != nil {
+		t.Fatalf("decode export JSON: %v\noutput: %s", err, buf.String())
+	}
+	if exportResp.Total != 1 {
+		t.Fatalf("expected total 1, got %+v", exportResp)
+	}
+
+	buf.Reset()
+	rootCmd.SetArgs([]string{"update", "1", "--status", "READ", "--json"})
+	if err := rootCmd.Execute(); err != nil {
+		t.Fatal(err)
+	}
+
+	buf.Reset()
+	rootCmd.SetArgs([]string{"import", "--input", exportPath, "--dry-run", "--json"})
+	if err := rootCmd.Execute(); err != nil {
+		t.Fatal(err)
+	}
+
+	var dryRunResp struct {
+		DryRun  bool `json:"dry_run"`
+		Updated int  `json:"updated"`
+	}
+	if err := json.Unmarshal(buf.Bytes(), &dryRunResp); err != nil {
+		t.Fatalf("decode import dry-run JSON: %v\noutput: %s", err, buf.String())
+	}
+	if !dryRunResp.DryRun || dryRunResp.Updated != 1 {
+		t.Fatalf("unexpected dry-run JSON: %+v", dryRunResp)
+	}
+
+	buf.Reset()
+	importDryRun = false
+	rootCmd.SetArgs([]string{"import", "--input", exportPath, "--json"})
+	if err := rootCmd.Execute(); err != nil {
+		t.Fatal(err)
+	}
+
+	buf.Reset()
+	rootCmd.SetArgs([]string{"get", "1", "--json"})
+	if err := rootCmd.Execute(); err != nil {
+		t.Fatal(err)
+	}
+
+	var got struct {
+		Status string `json:"status"`
+	}
+	if err := json.Unmarshal(buf.Bytes(), &got); err != nil {
+		t.Fatalf("decode get JSON: %v\noutput: %s", err, buf.String())
+	}
+	if got.Status != "TO_BUY" {
+		t.Fatalf("expected status restored to TO_BUY, got %q", got.Status)
+	}
+}

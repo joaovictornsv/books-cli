@@ -8,6 +8,7 @@ import (
 	"text/tabwriter"
 
 	"github.com/joaovictornsv/books-cli/internal/config"
+	"github.com/joaovictornsv/books-cli/internal/db"
 	"github.com/joaovictornsv/books-cli/internal/models"
 )
 
@@ -31,6 +32,27 @@ func (TableFormatter) PrintBooks(w io.Writer, page BooksPage) error {
 		return err
 	}
 	return nil
+}
+
+func (TableFormatter) PrintBulkUpdate(w io.Writer, books []models.Book) error {
+	_, err := fmt.Fprintf(w, "updated %d books\n", len(books))
+	return err
+}
+
+func (TableFormatter) PrintExport(w io.Writer, output, format string, total int) error {
+	_, err := fmt.Fprintf(w, "exported %d books to %s (%s)\n", total, output, format)
+	return err
+}
+
+func (TableFormatter) PrintImport(w io.Writer, result db.ImportResult) error {
+	if result.DryRun {
+		_, err := fmt.Fprintf(w, "dry run: would create %d, update %d (%d total)\n",
+			result.Created, result.Updated, result.Total)
+		return err
+	}
+	_, err := fmt.Fprintf(w, "imported %d books (%d created, %d updated)\n",
+		result.Total, result.Created, result.Updated)
+	return err
 }
 
 func (TableFormatter) PrintConfig(w io.Writer, cfg config.Config) error {
