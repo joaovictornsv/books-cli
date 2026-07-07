@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Bulk `update --ids` to change several books in one transaction
+- `export` command to dump the library to JSON or CSV (`--format`, `--output`, `--include-archived`)
+- `import` command to load books from JSON or CSV with upsert-by-ID and `--dry-run`
+
 ## [0.4.0] - 2026-07-06
 
 ### Added

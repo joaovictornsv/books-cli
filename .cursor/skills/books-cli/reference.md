@@ -123,9 +123,32 @@ For pt-BR/English variants, prefer one command with multiple `--term` flags over
 
 At least one flag: `--title`, `--author`, `--category`, `--status`, `--notes`, `--description`, `--started-at`, `--finished-at`, `--priority`, `--no-priority`, `--eligible-to-sell`, `--no-eligible-to-sell`, `--sold`, `--no-sold`. Pass `--category ""`, `--started-at ""`, or `--finished-at ""` to clear.
 
+Provide either positional `id` or `--ids` (comma-separated), not both.
+
+Bulk update JSON: `{ "updated": [], "count": N }`.
+
 Prefer `--no-priority`, `--no-eligible-to-sell`, `--no-sold` to clear booleans explicitly.
 
 Status changes do not set or clear timestamps automatically. Set `--started-at` / `--finished-at` explicitly (RFC3339).
+
+### `export`
+
+| Flag | Notes |
+| --- | --- |
+| `--format` | Required: `json` or `csv` |
+| `--output` | Required: file path or `-` for stdout |
+| `--include-archived` | Default false |
+
+JSON confirmation: `{ "output": "...", "format": "json", "total": N }`.
+
+### `import`
+
+| Flag | Notes |
+| --- | --- |
+| `--input` | Required: `.json` or `.csv` file |
+| `--dry-run` | Validate without writing |
+
+Upserts by `id`. JSON: `{ "created": N, "updated": M, "total": T, "dry_run": false }`.
 
 ### `delete [id]`
 

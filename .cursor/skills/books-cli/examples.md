@@ -56,6 +56,7 @@ books search --term hobbit --term "o hobbit" --json
 | User says | Command |
 | --- | --- |
 | "Mark book 42 as read" | `books update 42 --status READ --finished-at "<RFC3339>" --json` |
+| "Mark books 1, 2, 3 as read" | `books update --ids 1,2,3 --status READ --json` |
 | "Recategorize book 42 as biography" | `books update 42 --category BIOGRAPHY --json` |
 | "Start reading book 7" | `books update 7 --status READING --started-at "<RFC3339>" --json` |
 | "Remove priority from book 3" | `books update 3 --no-priority --json` |
@@ -63,5 +64,7 @@ books search --term hobbit --term "o hobbit" --json
 | "Show Dune" | `books get --title "Dune" --exact --json` |
 | "Remove book 42 from my list" | `books update 42 --status ARCHIVED --json` |
 | "Delete book 42 permanently" | `books delete 42 -y --json` |
+| "Export my library" | `books export --format json --output books.json --json` |
+| "Import books from a file" | `books import --input books.json --json` |
 | "What statuses exist?" | `books schema --json` |
 | "Where is my database?" | `books config --json` |

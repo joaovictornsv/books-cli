@@ -6,6 +6,7 @@ import (
 	"io"
 
 	"github.com/joaovictornsv/books-cli/internal/config"
+	"github.com/joaovictornsv/books-cli/internal/db"
 	"github.com/joaovictornsv/books-cli/internal/models"
 )
 
@@ -47,6 +48,40 @@ func (JSONFormatter) PrintBooks(w io.Writer, page BooksPage) error {
 	enc := json.NewEncoder(w)
 	enc.SetIndent("", "  ")
 	return enc.Encode(resp)
+}
+
+func (JSONFormatter) PrintBulkUpdate(w io.Writer, books []models.Book) error {
+	if books == nil {
+		books = []models.Book{}
+	}
+	payload := map[string]any{
+		"updated": books,
+		"count":   len(books),
+	}
+	enc := json.NewEncoder(w)
+	enc.SetIndent("", "  ")
+	return enc.Encode(payload)
+}
+
+func (JSONFormatter) PrintExport(w io.Writer, output, format string, total int) error {
+	enc := json.NewEncoder(w)
+	enc.SetIndent("", "  ")
+	return enc.Encode(map[string]any{
+		"output": output,
+		"format": format,
+		"total":  total,
+	})
+}
+
+func (JSONFormatter) PrintImport(w io.Writer, result db.ImportResult) error {
+	enc := json.NewEncoder(w)
+	enc.SetIndent("", "  ")
+	return enc.Encode(map[string]any{
+		"created":  result.Created,
+		"updated":  result.Updated,
+		"total":    result.Total,
+		"dry_run":  result.DryRun,
+	})
 }
 
 func (JSONFormatter) PrintConfig(w io.Writer, cfg config.Config) error {
