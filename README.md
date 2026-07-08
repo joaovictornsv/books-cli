@@ -23,9 +23,11 @@ books search "le guin" --json
 | `count` | Count books matching filters |
 | `stats` | Library aggregates |
 | `backup` | Copy the SQLite database |
+| `export` | Dump library to JSON or CSV |
+| `import` | Load books from JSON or CSV |
 | `config` | Show resolved configuration |
 
-Use `--json` on any command except `config` for scripting. Full flag reference: [docs/COMMANDS.md](docs/COMMANDS.md).
+Use `--json` on any command for scripting. Full flag reference: [docs/COMMANDS.md](docs/COMMANDS.md). For AI agents: [`.cursor/skills/books-cli/SKILL.md`](.cursor/skills/books-cli/SKILL.md).
 
 ## Setup
 

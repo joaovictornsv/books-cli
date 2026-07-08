@@ -15,7 +15,7 @@ Operate the `books` CLI in the shell — never simulate database changes.
 
 | File | Purpose |
 | --- | --- |
-| [reference.md](reference.md) | Flags, enums, JSON shapes, search/pagination details |
+| [reference.md](reference.md) | Flags, enums, JSON shapes, pagination/search details |
 | [examples.md](examples.md) | User phrase → command mapping |
 
 ## Setup
@@ -62,21 +62,17 @@ books add "<title>" --author "<author>" --category <CATEGORY> --description "<sy
 books check --title "<title>" [--author "<author>"] [--exact] --json
 ```
 
-For cross-language title variants (pt-BR vs English), also try bilingual `search --term` as a fallback — see [Search](#search-and-list).
+For cross-language title variants (pt-BR vs English), also try bilingual `search --term` as a fallback — see [Search and list](#search-and-list).
 
 After success, show id, title, author, category, status, priority (Yes/No), description snippet, and `added_at` in a short table.
 
 ## Search and list
 
-Pagination is always on (`page=1`, `limit=20`, max `100`). Never assume one page is the full set — check `total` vs `len(books)`.
+The DB mixes **pt-BR and English** titles/descriptions. Search is case-insensitive substring match; it does not translate.
 
-The DB mixes **pt-BR and English** titles/descriptions. Search is case-insensitive substring match on title, description, or author; it does not translate. Use multiple `--term` flags (OR) for language variants in one query — details in [reference.md](reference.md#search-query).
+**When to use bilingual search:** topic/title lookups when `check` is not enough. Not needed for status-only lists (wishlist, currently reading). Details: [reference.md#search-query](reference.md#search-query).
 
-**Smaller payloads:** pass `--fields id,title,status` (requires `--json`) on `list` or `search`.
-
-**When to use bilingual search:** topic/title lookups when `check` is not enough. Not needed for status-only lists (wishlist, currently reading).
-
-**Workflow:** Run `search` or `list` with `--json` → read `total`, `page`, `limit`, `books` → if `total > limit`, show current page and `Page X of Y (N total)`; fetch more pages only when needed.
+**Workflow:** Run `search` or `list` with `--json` → read `total`, `page`, `limit`, `books` → if `total > limit`, show `Page X of Y (N total)`; fetch more pages only when needed. Pagination/field flags: [reference.md#pagination](reference.md#pagination).
 
 ```bash
 books list [--status STATUS] [--category CATEGORY] [--priority] [--eligible-to-sell] [--sort FIELD] [--order asc|desc] --page 1 --limit 20 [--fields id,title,status] --json
@@ -90,10 +86,15 @@ Present list/search results as a table: ID, Title, Author, Category, Status, Pri
 | Intent | Command |
 | --- | --- |
 | View one book | `books get <id> --json` or `books get --title "<title>" [--exact] [--author "..."] --json` |
+| Count books | `books count [--status STATUS] [--category CATEGORY] [--priority] [--eligible-to-sell] --json` |
+| Library stats | `books stats [--year YYYY] --json` |
 | Update fields | `books update <id> --status READ [--category FICTION] ... --json` |
 | Clear booleans | `books update <id> --no-priority` / `--no-eligible-to-sell` / `--no-sold --json` |
 | Remove from active lists | `books update <id> --status ARCHIVED --json` |
 | Permanently delete | `books delete <id> -y --json` (destructive; `-y` required with `--json`) |
+| Export library | `books export --format json --output books.json --json` |
+| Import library | `books import --input books.json [--dry-run] --json` |
+| Backup database | `books backup --output /path/to/backup.db [--force] --json` |
 | Show DB path | `books config --json` |
 
 `update` needs at least one flag. Prefer `--no-priority` (etc.) to clear boolean fields explicitly.
