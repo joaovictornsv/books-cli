@@ -51,6 +51,15 @@ books search --term hobbit --term "o hobbit" --json
 | "Recently finished" | `books list --status READ --sort finished_at --order desc --limit 10 --json` |
 | "Compact wishlist" | `books list --status TO_BUY --fields id,title,status --json` |
 
+## Count & stats
+
+| User says | Command |
+| --- | --- |
+| "How many books am I reading?" | `books count --status READING --json` |
+| "How many on my wishlist?" | `books count --status TO_BUY --json` |
+| "Library stats" | `books stats --json` |
+| "How many did I finish this year?" | `books stats --year 2025 --json` |
+
 ## Update & other
 
 | User says | Command |
@@ -66,5 +75,6 @@ books search --term hobbit --term "o hobbit" --json
 | "Delete book 42 permanently" | `books delete 42 -y --json` |
 | "Export my library" | `books export --format json --output books.json --json` |
 | "Import books from a file" | `books import --input books.json --json` |
+| "Backup my database" | `books backup --output /path/to/backup.db --json` |
 | "What statuses exist?" | `books schema --json` |
 | "Where is my database?" | `books config --json` |
