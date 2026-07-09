@@ -7,6 +7,7 @@ import (
 	"strings"
 	"text/tabwriter"
 
+	"github.com/joaovictornsv/books-cli/internal/buildinfo"
 	"github.com/joaovictornsv/books-cli/internal/config"
 	"github.com/joaovictornsv/books-cli/internal/db"
 	"github.com/joaovictornsv/books-cli/internal/models"
@@ -99,6 +100,10 @@ func printStatsGroup(w io.Writer, label string, counts map[string]int) error {
 func (TableFormatter) PrintBackup(w io.Writer, source, dest string) error {
 	_, err := fmt.Fprintf(w, "backed up %s to %s\n", source, dest)
 	return err
+}
+
+func (TableFormatter) PrintVersion(w io.Writer, info buildinfo.Info) error {
+	return PrintVersionHuman(w, info)
 }
 
 func (TableFormatter) PrintSchema(w io.Writer, schema models.SchemaDocument) error {

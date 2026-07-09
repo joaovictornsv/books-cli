@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/joaovictornsv/books-cli/internal/buildinfo"
 	"github.com/joaovictornsv/books-cli/internal/config"
 	"github.com/joaovictornsv/books-cli/internal/db"
 	"github.com/joaovictornsv/books-cli/internal/models"
@@ -128,6 +129,17 @@ func (JSONFormatter) PrintBackup(w io.Writer, source, dest string) error {
 		"source": source,
 		"output": dest,
 	})
+}
+
+func (JSONFormatter) PrintVersion(w io.Writer, info buildinfo.Info) error {
+	enc := json.NewEncoder(w)
+	enc.SetIndent("", "  ")
+	return enc.Encode(info)
+}
+
+func PrintVersionHuman(w io.Writer, info buildinfo.Info) error {
+	_, err := fmt.Fprintf(w, "%s (commit %s, %s)\n", info.Version, info.Commit, info.GoVersion)
+	return err
 }
 
 func PrintConfigHuman(w io.Writer, cfg config.Config) error {

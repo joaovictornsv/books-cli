@@ -26,6 +26,7 @@ books search "le guin" --json
 | `export` | Dump library to JSON or CSV |
 | `import` | Load books from JSON or CSV |
 | `config` | Show resolved configuration |
+| `version` | Show CLI version and build metadata (`--json`) |
 
 Use `--json` on any command for scripting. Full flag reference: [docs/COMMANDS.md](docs/COMMANDS.md). For AI agents: [`.cursor/skills/books-cli/SKILL.md`](.cursor/skills/books-cli/SKILL.md).
 
@@ -40,6 +41,14 @@ go build -o books ./cmd/books
 ```
 
 Pre-built binaries for linux/amd64 are available on [GitHub Releases](https://github.com/joaovictornsv/books-cli/releases).
+
+Download `books-linux-amd64` and `SHA256SUMS`, then verify integrity:
+
+```bash
+sha256sum -c SHA256SUMS
+```
+
+Binaries built locally with `go build` or `go install` will not match release checksums (different toolchain and build flags). Use `books version --json` to inspect build metadata for source installs.
 
 ### Database path
 

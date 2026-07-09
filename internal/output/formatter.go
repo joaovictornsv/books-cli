@@ -3,6 +3,7 @@ package output
 import (
 	"io"
 
+	"github.com/joaovictornsv/books-cli/internal/buildinfo"
 	"github.com/joaovictornsv/books-cli/internal/config"
 	"github.com/joaovictornsv/books-cli/internal/db"
 	"github.com/joaovictornsv/books-cli/internal/models"
@@ -26,6 +27,7 @@ type Formatter interface {
 	PrintStats(w io.Writer, stats models.LibraryStats) error
 	PrintBackup(w io.Writer, source, dest string) error
 	PrintSchema(w io.Writer, schema models.SchemaDocument) error
+	PrintVersion(w io.Writer, info buildinfo.Info) error
 }
 
 func New(json bool) Formatter {
