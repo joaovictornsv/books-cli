@@ -6,16 +6,14 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/joaovictornsv/books-cli/internal/buildinfo"
 	"github.com/joaovictornsv/books-cli/internal/config"
 	"github.com/joaovictornsv/books-cli/internal/db"
 	"github.com/joaovictornsv/books-cli/internal/output"
 	"github.com/spf13/cobra"
 )
 
-var (
-	jsonOutput bool
-	version    = "0.5.0"
-)
+var jsonOutput bool
 
 var rootCmd = &cobra.Command{
 	Use:           "books",
@@ -26,7 +24,7 @@ var rootCmd = &cobra.Command{
 
 func init() {
 	rootCmd.PersistentFlags().BoolVar(&jsonOutput, "json", false, "Machine-readable JSON output")
-	rootCmd.Version = version
+	rootCmd.Version = buildinfo.Version
 }
 
 func openRepo() (*db.Repository, func(), error) {

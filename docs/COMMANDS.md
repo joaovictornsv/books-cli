@@ -318,6 +318,27 @@ Print effective configuration.
 books config --json
 ```
 
+## `version`
+
+Show CLI version and build metadata.
+
+```bash
+books version
+books version --json
+```
+
+Example JSON output:
+
+```json
+{
+  "version": "0.5.0",
+  "commit": "unknown",
+  "go_version": "go1.25.0"
+}
+```
+
+Release binaries embed the git commit via build flags; local `go build` / `go install` builds show `commit: "unknown"` unless you pass matching `-ldflags`.
+
 ## Exit codes
 
 - `0` — success

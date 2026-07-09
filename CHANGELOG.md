@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `version` command with `--json` build metadata (`version`, `commit`, `go_version`)
+- `SHA256SUMS` checksum file published alongside release binaries; README documents verification steps
+
 ## [0.5.0] - 2026-07-07
 
 ### Added

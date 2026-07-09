@@ -48,9 +48,15 @@ git push origin main
 git push origin "$VERSION"
 
 # Build release binary (linux/amd64) from the tagged commit
-GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o "$ASSET" ./cmd/books
+LDFLAGS="-s -w \
+  -X github.com/joaovictornsv/books-cli/internal/buildinfo.Version=${VERSION#v} \
+  -X github.com/joaovictornsv/books-cli/internal/buildinfo.Commit=$(git rev-parse HEAD)"
+GOOS=linux GOARCH=amd64 go build -ldflags="$LDFLAGS" -o "$ASSET" ./cmd/books
 
-# Create GitHub release with binary attached (notes: see "Release notes format" below)
+# Generate checksum file for the release binary
+sha256sum "$ASSET" > SHA256SUMS
+
+# Create GitHub release with binary and checksum attached (notes: see "Release notes format" below)
 gh release create "$VERSION" \
   --title "$VERSION" \
   --notes "$(cat <<'EOF'
@@ -59,12 +65,18 @@ gh release create "$VERSION" \
 - <bullet: user-visible change>
 EOF
 )" \
-  "$ASSET"
+  "$ASSET" SHA256SUMS
 
-rm -f "$ASSET"
+rm -f "$ASSET" SHA256SUMS
 ```
 
-Every release must include the built binary. Do not publish a release without uploading `books-linux-amd64`.
+Every release must include the built binary and a `SHA256SUMS` file. Do not publish a release without uploading both `books-linux-amd64` and `SHA256SUMS`.
+
+Users verify downloaded binaries with:
+
+```bash
+sha256sum -c SHA256SUMS
+```
 
 Add extra GOOS/GOARCH builds only when explicitly requested; default is linux/amd64 only.
 
@@ -113,5 +125,6 @@ EOF
 - [ ] Annotated tag created locally (`git tag -a vX.Y.Z -m vX.Y.Z`)
 - [ ] Commit and tag pushed to `origin`
 - [ ] `books-linux-amd64` built from the tagged commit
+- [ ] `SHA256SUMS` generated from the release binary
 - [ ] Release notes written as concise bullets (see format above)
-- [ ] GitHub release created with matching notes and binary uploaded
+- [ ] GitHub release created with matching notes, binary, and `SHA256SUMS` uploaded
