@@ -23,8 +23,8 @@ func TestRepositoryListSort(t *testing.T) {
 			Title:          title,
 			Status:         models.StatusNotStarted,
 			PriorityToBuy:  0,
-			EligibleToSell: 0,
-			Sold:           0,
+			EligibleToDonate: 0,
+			Donated:           0,
 			AddedAt:        models.NowTimestamp(),
 		})
 		if err != nil {
@@ -59,9 +59,9 @@ func TestRepositoryListSortFinishedAt(t *testing.T) {
 	finishedEarly := "2024-01-01T00:00:00Z"
 	finishedLate := "2025-01-01T00:00:00Z"
 	for _, book := range []models.Book{
-		{Title: "No Date", Status: models.StatusRead, PriorityToBuy: 0, EligibleToSell: 0, Sold: 0, AddedAt: models.NowTimestamp()},
-		{Title: "Early", Status: models.StatusRead, PriorityToBuy: 0, EligibleToSell: 0, Sold: 0, AddedAt: models.NowTimestamp(), FinishedAt: &finishedEarly},
-		{Title: "Late", Status: models.StatusRead, PriorityToBuy: 0, EligibleToSell: 0, Sold: 0, AddedAt: models.NowTimestamp(), FinishedAt: &finishedLate},
+		{Title: "No Date", Status: models.StatusRead, PriorityToBuy: 0, EligibleToDonate: 0, Donated: 0, AddedAt: models.NowTimestamp()},
+		{Title: "Early", Status: models.StatusRead, PriorityToBuy: 0, EligibleToDonate: 0, Donated: 0, AddedAt: models.NowTimestamp(), FinishedAt: &finishedEarly},
+		{Title: "Late", Status: models.StatusRead, PriorityToBuy: 0, EligibleToDonate: 0, Donated: 0, AddedAt: models.NowTimestamp(), FinishedAt: &finishedLate},
 	} {
 		if _, err = repo.Create(ctx, book); err != nil {
 			t.Fatal(err)
@@ -105,8 +105,8 @@ func TestRepositorySearchAuthorTerm(t *testing.T) {
 		Description:    &description,
 		Status:         models.StatusNotStarted,
 		PriorityToBuy:  0,
-		EligibleToSell: 0,
-		Sold:           0,
+		EligibleToDonate: 0,
+		Donated:           0,
 		AddedAt:        models.NowTimestamp(),
 	})
 	if err != nil {
@@ -138,8 +138,8 @@ func TestRepositoryGetByTitle(t *testing.T) {
 		Author:         &author,
 		Status:         models.StatusNotStarted,
 		PriorityToBuy:  0,
-		EligibleToSell: 0,
-		Sold:           0,
+		EligibleToDonate: 0,
+		Donated:           0,
 		AddedAt:        models.NowTimestamp(),
 	})
 	if err != nil {
@@ -149,8 +149,8 @@ func TestRepositoryGetByTitle(t *testing.T) {
 		Title:          "Children of Dune",
 		Status:         models.StatusNotStarted,
 		PriorityToBuy:  0,
-		EligibleToSell: 0,
-		Sold:           0,
+		EligibleToDonate: 0,
+		Donated:           0,
 		AddedAt:        models.NowTimestamp(),
 	})
 	if err != nil {

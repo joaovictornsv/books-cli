@@ -15,7 +15,7 @@ import (
 
 var bookCSVColumns = []string{
 	"id", "title", "author", "category", "status",
-	"priority_to_buy", "eligible_to_sell", "sold",
+	"priority_to_buy", "eligible_to_donate", "donated",
 	"notes", "description", "added_at", "started_at", "finished_at",
 }
 
@@ -132,8 +132,8 @@ func bookToCSVRecord(book models.Book) []string {
 		categoryToString(book.Category),
 		book.Status.String(),
 		strconv.Itoa(book.PriorityToBuy),
-		strconv.Itoa(book.EligibleToSell),
-		strconv.Itoa(book.Sold),
+		strconv.Itoa(book.EligibleToDonate),
+		strconv.Itoa(book.Donated),
 		ptrToString(book.Notes),
 		ptrToString(book.Description),
 		book.AddedAt,
@@ -170,23 +170,23 @@ func csvRecordToBook(record []string, colIndex map[string]int) (models.Book, err
 	if err != nil {
 		return models.Book{}, fmt.Errorf("invalid priority_to_buy: %w", err)
 	}
-	eligible, err := strconv.Atoi(strings.TrimSpace(get("eligible_to_sell")))
+	eligible, err := strconv.Atoi(strings.TrimSpace(get("eligible_to_donate")))
 	if err != nil {
-		return models.Book{}, fmt.Errorf("invalid eligible_to_sell: %w", err)
+		return models.Book{}, fmt.Errorf("invalid eligible_to_donate: %w", err)
 	}
-	sold, err := strconv.Atoi(strings.TrimSpace(get("sold")))
+	donated, err := strconv.Atoi(strings.TrimSpace(get("donated")))
 	if err != nil {
-		return models.Book{}, fmt.Errorf("invalid sold: %w", err)
+		return models.Book{}, fmt.Errorf("invalid donated: %w", err)
 	}
 
 	book := models.Book{
-		ID:             id,
-		Title:          get("title"),
-		Status:         status,
-		PriorityToBuy:  priority,
-		EligibleToSell: eligible,
-		Sold:           sold,
-		AddedAt:        get("added_at"),
+		ID:               id,
+		Title:            get("title"),
+		Status:           status,
+		PriorityToBuy:    priority,
+		EligibleToDonate: eligible,
+		Donated:          donated,
+		AddedAt:          get("added_at"),
 	}
 	book.Author = optionalString(get("author"))
 	book.Notes = optionalString(get("notes"))
@@ -305,16 +305,16 @@ func replaceBookWithQuerier(ctx context.Context, q querier, id int64, book model
 	}
 	_, err := q.ExecContext(ctx, `
 		UPDATE books SET
-			title = ?, author = ?, category = ?, status = ?, priority_to_buy = ?, eligible_to_sell = ?,
-			sold = ?, notes = ?, description = ?, added_at = ?, started_at = ?, finished_at = ?
+			title = ?, author = ?, category = ?, status = ?, priority_to_buy = ?, eligible_to_donate = ?,
+			donated = ?, notes = ?, description = ?, added_at = ?, started_at = ?, finished_at = ?
 		WHERE id = ?`,
 		book.Title,
 		nullString(book.Author),
 		nullCategory(book.Category),
 		book.Status.String(),
 		book.PriorityToBuy,
-		book.EligibleToSell,
-		book.Sold,
+		book.EligibleToDonate,
+		book.Donated,
 		nullString(book.Notes),
 		nullString(book.Description),
 		book.AddedAt,
@@ -337,7 +337,7 @@ func createWithIDQuerier(ctx context.Context, q querier, book models.Book) (mode
 	}
 	_, err := q.ExecContext(ctx, `
 		INSERT INTO books (
-			id, title, author, category, status, priority_to_buy, eligible_to_sell, sold,
+			id, title, author, category, status, priority_to_buy, eligible_to_donate, donated,
 			notes, description, added_at, started_at, finished_at
 		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 		book.ID,
@@ -346,8 +346,8 @@ func createWithIDQuerier(ctx context.Context, q querier, book models.Book) (mode
 		nullCategory(book.Category),
 		book.Status.String(),
 		book.PriorityToBuy,
-		book.EligibleToSell,
-		book.Sold,
+		book.EligibleToDonate,
+		book.Donated,
 		nullString(book.Notes),
 		nullString(book.Description),
 		book.AddedAt,
@@ -369,7 +369,7 @@ func createWithQuerier(ctx context.Context, q querier, book models.Book) (models
 	}
 	res, err := q.ExecContext(ctx, `
 		INSERT INTO books (
-			title, author, category, status, priority_to_buy, eligible_to_sell, sold,
+			title, author, category, status, priority_to_buy, eligible_to_donate, donated,
 			notes, description, added_at, started_at, finished_at
 		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 		book.Title,
@@ -377,8 +377,8 @@ func createWithQuerier(ctx context.Context, q querier, book models.Book) (models
 		nullCategory(book.Category),
 		book.Status.String(),
 		book.PriorityToBuy,
-		book.EligibleToSell,
-		book.Sold,
+		book.EligibleToDonate,
+		book.Donated,
 		nullString(book.Notes),
 		nullString(book.Description),
 		book.AddedAt,

@@ -29,7 +29,7 @@ func TestListFilterFromFlags(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if got.Status != nil || got.Category != nil || got.PriorityToBuy != nil || got.EligibleToSell != nil {
+		if got.Status != nil || got.Category != nil || got.PriorityToBuy != nil || got.EligibleToDonate != nil {
 			t.Fatalf("expected empty filter, got %+v", got)
 		}
 	})
@@ -120,9 +120,9 @@ func TestListFilterFromFlags(t *testing.T) {
 		}
 	})
 
-	t.Run("eligible to sell", func(t *testing.T) {
+	t.Run("eligible to donate", func(t *testing.T) {
 		f := newListFilterCmd(t)
-		if err := f.cmd.Flags().Set("eligible-to-sell", "true"); err != nil {
+		if err := f.cmd.Flags().Set("eligible-to-donate", "true"); err != nil {
 			t.Fatal(err)
 		}
 
@@ -130,8 +130,8 @@ func TestListFilterFromFlags(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if got.EligibleToSell == nil || !*got.EligibleToSell {
-			t.Fatalf("expected eligible to sell, got %+v", got.EligibleToSell)
+		if got.EligibleToDonate == nil || !*got.EligibleToDonate {
+			t.Fatalf("expected eligible to donate, got %+v", got.EligibleToDonate)
 		}
 	})
 }

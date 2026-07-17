@@ -23,8 +23,8 @@ func TestRepositoryCRUD(t *testing.T) {
 		Title:          "Dune",
 		Status:         models.StatusNotStarted,
 		PriorityToBuy:  0,
-		EligibleToSell: 0,
-		Sold:           0,
+		EligibleToDonate: 0,
+		Donated:           0,
 		AddedAt:        models.NowTimestamp(),
 	})
 	if err != nil {
@@ -117,8 +117,8 @@ func TestRepositorySearch(t *testing.T) {
 		Author:         &author,
 		Status:         models.StatusNotStarted,
 		PriorityToBuy:  0,
-		EligibleToSell: 0,
-		Sold:           0,
+		EligibleToDonate: 0,
+		Donated:           0,
 		AddedAt:        models.NowTimestamp(),
 	})
 	if err != nil {
@@ -158,8 +158,8 @@ func TestRepositorySearchDescription(t *testing.T) {
 		Description:    &description,
 		Status:         models.StatusNotStarted,
 		PriorityToBuy:  0,
-		EligibleToSell: 0,
-		Sold:           0,
+		EligibleToDonate: 0,
+		Donated:           0,
 		AddedAt:        models.NowTimestamp(),
 	})
 	if err != nil {
@@ -190,8 +190,8 @@ func TestRepositorySearchMultipleTerms(t *testing.T) {
 			Title:          title,
 			Status:         models.StatusNotStarted,
 			PriorityToBuy:  0,
-			EligibleToSell: 0,
-			Sold:           0,
+			EligibleToDonate: 0,
+			Donated:           0,
 			AddedAt:        models.NowTimestamp(),
 		})
 		if err != nil {
@@ -233,8 +233,8 @@ func TestRepositorySearchCategory(t *testing.T) {
 		Category:       &fiction,
 		Status:         models.StatusNotStarted,
 		PriorityToBuy:  0,
-		EligibleToSell: 0,
-		Sold:           0,
+		EligibleToDonate: 0,
+		Donated:           0,
 		AddedAt:        models.NowTimestamp(),
 	})
 	if err != nil {
@@ -245,8 +245,8 @@ func TestRepositorySearchCategory(t *testing.T) {
 		Category:       &history,
 		Status:         models.StatusNotStarted,
 		PriorityToBuy:  0,
-		EligibleToSell: 0,
-		Sold:           0,
+		EligibleToDonate: 0,
+		Donated:           0,
 		AddedAt:        models.NowTimestamp(),
 	})
 	if err != nil {
@@ -278,8 +278,8 @@ func TestRepositoryCheck(t *testing.T) {
 		Author:         &author,
 		Status:         models.StatusToBuy,
 		PriorityToBuy:  0,
-		EligibleToSell: 0,
-		Sold:           0,
+		EligibleToDonate: 0,
+		Donated:           0,
 		AddedAt:        models.NowTimestamp(),
 	})
 	if err != nil {
@@ -289,8 +289,8 @@ func TestRepositoryCheck(t *testing.T) {
 		Title:          "Children of Dune",
 		Status:         models.StatusToBuy,
 		PriorityToBuy:  0,
-		EligibleToSell: 0,
-		Sold:           0,
+		EligibleToDonate: 0,
+		Donated:           0,
 		AddedAt:        models.NowTimestamp(),
 	})
 	if err != nil {
@@ -300,8 +300,8 @@ func TestRepositoryCheck(t *testing.T) {
 		Title:          "Dune Messiah",
 		Status:         models.StatusArchived,
 		PriorityToBuy:  0,
-		EligibleToSell: 0,
-		Sold:           0,
+		EligibleToDonate: 0,
+		Donated:           0,
 		AddedAt:        models.NowTimestamp(),
 	})
 	if err != nil {
@@ -355,8 +355,8 @@ func TestRepositoryListFilters(t *testing.T) {
 		Title:          "Buy Me",
 		Status:         models.StatusToBuy,
 		PriorityToBuy:  1,
-		EligibleToSell: 0,
-		Sold:           0,
+		EligibleToDonate: 0,
+		Donated:           0,
 		AddedAt:        models.NowTimestamp(),
 	})
 	if err != nil {
@@ -390,8 +390,8 @@ func TestRepositoryCategory(t *testing.T) {
 		Category:       &category,
 		Status:         models.StatusToBuy,
 		PriorityToBuy:  0,
-		EligibleToSell: 0,
-		Sold:           0,
+		EligibleToDonate: 0,
+		Donated:           0,
 		AddedAt:        models.NowTimestamp(),
 	})
 	if err != nil {
@@ -435,8 +435,8 @@ func TestRepositoryClearAuthor(t *testing.T) {
 		Author:         &author,
 		Status:         models.StatusNotStarted,
 		PriorityToBuy:  0,
-		EligibleToSell: 0,
-		Sold:           0,
+		EligibleToDonate: 0,
+		Donated:           0,
 		AddedAt:        models.NowTimestamp(),
 	})
 	if err != nil {
@@ -466,8 +466,8 @@ func TestRepositoryDelete(t *testing.T) {
 		Title:          "Dune",
 		Status:         models.StatusNotStarted,
 		PriorityToBuy:  0,
-		EligibleToSell: 0,
-		Sold:           0,
+		EligibleToDonate: 0,
+		Donated:           0,
 		AddedAt:        models.NowTimestamp(),
 	})
 	if err != nil {
@@ -537,8 +537,8 @@ func TestRepositoryPagination(t *testing.T) {
 			Title:          fmt.Sprintf("Book %d", i),
 			Status:         models.StatusNotStarted,
 			PriorityToBuy:  0,
-			EligibleToSell: 0,
-			Sold:           0,
+			EligibleToDonate: 0,
+			Donated:           0,
 			AddedAt:        models.NowTimestamp(),
 		})
 		if err != nil {
@@ -579,8 +579,8 @@ func TestRepositoryCountAndStats(t *testing.T) {
 		Category:       &fiction,
 		Status:         models.StatusRead,
 		PriorityToBuy:  0,
-		EligibleToSell: 0,
-		Sold:           0,
+		EligibleToDonate: 0,
+		Donated:           0,
 		AddedAt:        models.NowTimestamp(),
 		FinishedAt:     strPtr("2026-03-01T12:00:00Z"),
 	})
@@ -592,8 +592,8 @@ func TestRepositoryCountAndStats(t *testing.T) {
 		Category:       &fiction,
 		Status:         models.StatusToBuy,
 		PriorityToBuy:  1,
-		EligibleToSell: 0,
-		Sold:           0,
+		EligibleToDonate: 0,
+		Donated:           0,
 		AddedAt:        models.NowTimestamp(),
 	})
 	if err != nil {
@@ -603,8 +603,8 @@ func TestRepositoryCountAndStats(t *testing.T) {
 		Title:          "Clean Code",
 		Status:         models.StatusNotStarted,
 		PriorityToBuy:  0,
-		EligibleToSell: 0,
-		Sold:           0,
+		EligibleToDonate: 0,
+		Donated:           0,
 		AddedAt:        models.NowTimestamp(),
 	})
 	if err != nil {

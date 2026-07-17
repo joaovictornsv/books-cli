@@ -18,7 +18,7 @@ type ListFilter struct {
 	Status          *models.Status
 	Category        *models.Category
 	PriorityToBuy   *bool
-	EligibleToSell  *bool
+	EligibleToDonate  *bool
 	IncludeArchived bool
 	Pagination      *models.Pagination
 	Sort            models.Sort
@@ -70,7 +70,7 @@ func (r *Repository) Create(ctx context.Context, book models.Book) (models.Book,
 
 	res, err := r.db.sql.ExecContext(ctx, `
 		INSERT INTO books (
-			title, author, category, status, priority_to_buy, eligible_to_sell, sold,
+			title, author, category, status, priority_to_buy, eligible_to_donate, donated,
 			notes, description, added_at, started_at, finished_at
 		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 		book.Title,
@@ -78,8 +78,8 @@ func (r *Repository) Create(ctx context.Context, book models.Book) (models.Book,
 		nullCategory(book.Category),
 		book.Status.String(),
 		book.PriorityToBuy,
-		book.EligibleToSell,
-		book.Sold,
+		book.EligibleToDonate,
+		book.Donated,
 		nullString(book.Notes),
 		nullString(book.Description),
 		book.AddedAt,
@@ -100,7 +100,7 @@ func (r *Repository) Create(ctx context.Context, book models.Book) (models.Book,
 
 func (r *Repository) GetByID(ctx context.Context, id int64) (models.Book, error) {
 	row := r.db.sql.QueryRowContext(ctx, `
-		SELECT id, title, author, category, status, priority_to_buy, eligible_to_sell, sold,
+		SELECT id, title, author, category, status, priority_to_buy, eligible_to_donate, donated,
 		       notes, description, added_at, started_at, finished_at
 		FROM books WHERE id = ?`, id)
 
@@ -134,7 +134,7 @@ func (r *Repository) GetByTitle(ctx context.Context, filter TitleFilter) (models
 			return models.Book{}, err
 		}
 		query := `
-		SELECT id, title, author, category, status, priority_to_buy, eligible_to_sell, sold,
+		SELECT id, title, author, category, status, priority_to_buy, eligible_to_donate, donated,
 		       notes, description, added_at, started_at, finished_at
 		FROM books WHERE 1=1` + where + orderBy + ` LIMIT 1`
 		books, err := r.queryBooks(ctx, query, args...)
@@ -253,7 +253,7 @@ func (r *Repository) queryBooksPage(ctx context.Context, where string, args []an
 	}
 
 	query := `
-		SELECT id, title, author, category, status, priority_to_buy, eligible_to_sell, sold,
+		SELECT id, title, author, category, status, priority_to_buy, eligible_to_donate, donated,
 		       notes, description, added_at, started_at, finished_at
 		FROM books WHERE 1=1` + where + orderBy
 
@@ -290,9 +290,9 @@ func buildListWhere(filter ListFilter) (string, []any) {
 		query += ` AND priority_to_buy = ?`
 		args = append(args, models.ToBool01(*filter.PriorityToBuy))
 	}
-	if filter.EligibleToSell != nil {
-		query += ` AND eligible_to_sell = ?`
-		args = append(args, models.ToBool01(*filter.EligibleToSell))
+	if filter.EligibleToDonate != nil {
+		query += ` AND eligible_to_donate = ?`
+		args = append(args, models.ToBool01(*filter.EligibleToDonate))
 	}
 	return query, args
 }
@@ -415,16 +415,16 @@ func updateWithQuerier(ctx context.Context, q querier, id int64, patch models.Bo
 
 	_, err = q.ExecContext(ctx, `
 		UPDATE books SET
-			title = ?, author = ?, category = ?, status = ?, priority_to_buy = ?, eligible_to_sell = ?,
-			sold = ?, notes = ?, description = ?, started_at = ?, finished_at = ?
+			title = ?, author = ?, category = ?, status = ?, priority_to_buy = ?, eligible_to_donate = ?,
+			donated = ?, notes = ?, description = ?, started_at = ?, finished_at = ?
 		WHERE id = ?`,
 		updated.Title,
 		nullString(updated.Author),
 		nullCategory(updated.Category),
 		updated.Status.String(),
 		updated.PriorityToBuy,
-		updated.EligibleToSell,
-		updated.Sold,
+		updated.EligibleToDonate,
+		updated.Donated,
 		nullString(updated.Notes),
 		nullString(updated.Description),
 		nullString(updated.StartedAt),
@@ -440,7 +440,7 @@ func updateWithQuerier(ctx context.Context, q querier, id int64, patch models.Bo
 
 func getByIDWithQuerier(ctx context.Context, q querier, id int64) (models.Book, error) {
 	row := q.QueryRowContext(ctx, `
-		SELECT id, title, author, category, status, priority_to_buy, eligible_to_sell, sold,
+		SELECT id, title, author, category, status, priority_to_buy, eligible_to_donate, donated,
 		       notes, description, added_at, started_at, finished_at
 		FROM books WHERE id = ?`, id)
 
@@ -470,11 +470,11 @@ func applyPatch(current models.Book, patch models.BookPatch) models.Book {
 	if patch.PriorityToBuy != nil {
 		updated.PriorityToBuy = *patch.PriorityToBuy
 	}
-	if patch.EligibleToSell != nil {
-		updated.EligibleToSell = *patch.EligibleToSell
+	if patch.EligibleToDonate != nil {
+		updated.EligibleToDonate = *patch.EligibleToDonate
 	}
-	if patch.Sold != nil {
-		updated.Sold = *patch.Sold
+	if patch.Donated != nil {
+		updated.Donated = *patch.Donated
 	}
 	if patch.Notes != nil {
 		updated.Notes = patch.Notes
@@ -550,8 +550,8 @@ func scanBook(row rowScanner) (models.Book, error) {
 		&category,
 		&status,
 		&book.PriorityToBuy,
-		&book.EligibleToSell,
-		&book.Sold,
+		&book.EligibleToDonate,
+		&book.Donated,
 		&notes,
 		&description,
 		&book.AddedAt,

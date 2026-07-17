@@ -25,8 +25,8 @@ func TestBackupCreatesConsistentCopy(t *testing.T) {
 		Title:          "Dune",
 		Status:         models.StatusRead,
 		PriorityToBuy:  0,
-		EligibleToSell: 0,
-		Sold:           0,
+		EligibleToDonate: 0,
+		Donated:           0,
 		AddedAt:        models.NowTimestamp(),
 	})
 	if err != nil {

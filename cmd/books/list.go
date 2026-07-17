@@ -11,7 +11,7 @@ var (
 	listStatus         string
 	listCategory       string
 	listPriority       bool
-	listEligibleToSell bool
+	listEligibleToDonate bool
 	listPage           int
 	listLimit          int
 	listSort           string
@@ -22,7 +22,7 @@ var listCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List books with optional filters",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		filter, err := listFilterFromFlags(cmd, &listStatus, &listCategory, &listPriority, &listEligibleToSell)
+		filter, err := listFilterFromFlags(cmd, &listStatus, &listCategory, &listPriority, &listEligibleToDonate)
 		if err != nil {
 			return err
 		}
@@ -50,7 +50,7 @@ var listCmd = &cobra.Command{
 }
 
 func init() {
-	addListFilterFlags(listCmd, &listStatus, &listCategory, &listPriority, &listEligibleToSell)
+	addListFilterFlags(listCmd, &listStatus, &listCategory, &listPriority, &listEligibleToDonate)
 	addPaginationFlags(listCmd, &listPage, &listLimit)
 	addSortFlags(listCmd, &listSort, &listOrder)
 	addFieldsFlag(listCmd)

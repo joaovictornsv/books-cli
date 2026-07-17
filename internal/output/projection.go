@@ -16,8 +16,8 @@ var bookFieldNames = []string{
 	"category",
 	"status",
 	"priority_to_buy",
-	"eligible_to_sell",
-	"sold",
+	"eligible_to_donate",
+	"donated",
 	"notes",
 	"description",
 	"added_at",
@@ -127,10 +127,10 @@ func bookFieldValue(book models.Book, field string) any {
 		return string(book.Status)
 	case "priority_to_buy":
 		return book.PriorityToBuy
-	case "eligible_to_sell":
-		return book.EligibleToSell
-	case "sold":
-		return book.Sold
+	case "eligible_to_donate":
+		return book.EligibleToDonate
+	case "donated":
+		return book.Donated
 	case "notes":
 		if book.Notes == nil {
 			return nil

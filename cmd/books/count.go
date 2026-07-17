@@ -11,14 +11,14 @@ var (
 	countStatus         string
 	countCategory       string
 	countPriority       bool
-	countEligibleToSell bool
+	countEligibleToDonate bool
 )
 
 var countCmd = &cobra.Command{
 	Use:   "count",
 	Short: "Count books matching optional filters",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		filter, err := listFilterFromFlags(cmd, &countStatus, &countCategory, &countPriority, &countEligibleToSell)
+		filter, err := listFilterFromFlags(cmd, &countStatus, &countCategory, &countPriority, &countEligibleToDonate)
 		if err != nil {
 			return err
 		}
@@ -34,6 +34,6 @@ var countCmd = &cobra.Command{
 }
 
 func init() {
-	addListFilterFlags(countCmd, &countStatus, &countCategory, &countPriority, &countEligibleToSell)
+	addListFilterFlags(countCmd, &countStatus, &countCategory, &countPriority, &countEligibleToDonate)
 	rootCmd.AddCommand(countCmd)
 }

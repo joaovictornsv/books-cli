@@ -14,8 +14,8 @@ func TestUpdateBooleanFlagsMutualExclusion(t *testing.T) {
 		args []string
 	}{
 		{name: "priority and no-priority", args: []string{"update", "1", "--priority", "--no-priority"}},
-		{name: "eligible and no-eligible", args: []string{"update", "1", "--eligible-to-sell", "--no-eligible-to-sell"}},
-		{name: "sold and no-sold", args: []string{"update", "1", "--sold", "--no-sold"}},
+		{name: "eligible and no-eligible", args: []string{"update", "1", "--eligible-to-donate", "--no-eligible-to-donate"}},
+		{name: "donated and no-donated", args: []string{"update", "1", "--donated", "--no-donated"}},
 	}
 
 	for _, tc := range tests {

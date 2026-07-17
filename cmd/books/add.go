@@ -9,13 +9,13 @@ import (
 )
 
 var (
-	addAuthor         string
-	addCategory       string
-	addStatus         string
-	addPriority       bool
-	addEligibleToSell bool
-	addNotes          string
-	addDescription    string
+	addAuthor           string
+	addCategory         string
+	addStatus           string
+	addPriority         bool
+	addEligibleToDonate bool
+	addNotes            string
+	addDescription      string
 )
 
 var addCmd = &cobra.Command{
@@ -29,11 +29,11 @@ var addCmd = &cobra.Command{
 		}
 
 		book := models.Book{
-			Title:          args[0],
-			Status:         status,
-			PriorityToBuy:  models.ToBool01(addPriority),
-			EligibleToSell: models.ToBool01(addEligibleToSell),
-			Sold:           0,
+			Title:            args[0],
+			Status:           status,
+			PriorityToBuy:    models.ToBool01(addPriority),
+			EligibleToDonate: models.ToBool01(addEligibleToDonate),
+			Donated:          0,
 		}
 		if addAuthor != "" {
 			book.Author = &addAuthor
@@ -70,7 +70,7 @@ func init() {
 	addCmd.Flags().StringVar(&addCategory, "category", "", "Book category")
 	addCmd.Flags().StringVar(&addStatus, "status", models.StatusNotStarted.String(), "Book status")
 	addCmd.Flags().BoolVar(&addPriority, "priority", false, "Mark as priority to buy")
-	addCmd.Flags().BoolVar(&addEligibleToSell, "eligible-to-sell", false, "Mark as eligible to sell")
+	addCmd.Flags().BoolVar(&addEligibleToDonate, "eligible-to-donate", false, "Mark as eligible to donate")
 	addCmd.Flags().StringVar(&addNotes, "notes", "", "Free-form notes")
 	addCmd.Flags().StringVar(&addDescription, "description", "", "Book description (e.g. from the web)")
 	rootCmd.AddCommand(addCmd)

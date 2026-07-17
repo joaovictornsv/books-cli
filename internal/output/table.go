@@ -114,7 +114,7 @@ func (TableFormatter) PrintSchema(w io.Writer, schema models.SchemaDocument) err
 
 func printBooksTable(w io.Writer, page BooksPage) error {
 	tw := tabwriter.NewWriter(w, 0, 0, 2, ' ', 0)
-	if _, err := fmt.Fprintln(tw, "ID\tTITLE\tAUTHOR\tCATEGORY\tSTATUS\tPRIORITY\tSELL\tSOLD\tADDED"); err != nil {
+	if _, err := fmt.Fprintln(tw, "ID\tTITLE\tAUTHOR\tCATEGORY\tSTATUS\tPRIORITY\tDONATE\tDONATED\tADDED"); err != nil {
 		return err
 	}
 	for _, book := range page.Books {
@@ -125,8 +125,8 @@ func printBooksTable(w io.Writer, page BooksPage) error {
 			categoryLabel(book.Category),
 			book.Status,
 			boolMark(book.PriorityToBuy),
-			boolMark(book.EligibleToSell),
-			boolMark(book.Sold),
+			boolMark(book.EligibleToDonate),
+			boolMark(book.Donated),
 			book.AddedAt,
 		)
 		if err != nil {
