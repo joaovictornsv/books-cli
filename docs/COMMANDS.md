@@ -66,7 +66,7 @@ Used by `list` and `search`:
 | `--order` | `asc` | `asc` or `desc` |
 | `--fields` | _(none)_ | Comma-separated book fields (requires `--json`) |
 
-Allowed `--fields`: `id`, `title`, `author`, `category`, `status`, `priority_to_buy`, `eligible_to_sell`, `sold`, `notes`, `description`, `added_at`, `started_at`, `finished_at`.
+Allowed `--fields`: `id`, `title`, `author`, `category`, `status`, `priority_to_buy`, `eligible_to_donate`, `donated`, `notes`, `description`, `added_at`, `started_at`, `finished_at`.
 
 With `--fields`, each item in `books` contains only the requested keys. Envelope fields (`total`, `page`, `limit`) are always included.
 
@@ -116,7 +116,7 @@ books add "The Dispossessed" --status NOT_STARTED --description "Anarchist utopi
 | `--category` | _(empty)_ | Category enum value (see above or `books schema --json`) |
 | `--status` | `NOT_STARTED` | One of the status values |
 | `--priority` | `false` | Set `priority_to_buy` to `1` |
-| `--eligible-to-sell` | `false` | Set `eligible_to_sell` to `1` |
+| `--eligible-to-donate` | `false` | Set `eligible_to_donate` to `1` |
 | `--notes` | _(empty)_ | Free-form notes |
 | `--description` | _(empty)_ | Book description |
 
@@ -153,7 +153,7 @@ books list --json --fields id,title,status
 | `--status` | _(none)_ | Filter by status |
 | `--category` | _(none)_ | Filter by category |
 | `--priority` | `false` | Only books with `priority_to_buy = 1` |
-| `--eligible-to-sell` | `false` | Only books with `eligible_to_sell = 1` |
+| `--eligible-to-donate` | `false` | Only books with `eligible_to_donate = 1` |
 
 Plus [pagination and sorting](#pagination-and-sorting) flags.
 
@@ -214,8 +214,8 @@ Provide either positional `id` or `--ids` (comma-separated), not both.
 | `--notes`, `--description` | New text |
 | `--started-at`, `--finished-at` | RFC3339 timestamps; pass `""` to clear |
 | `--priority` / `--no-priority` | Set or clear `priority_to_buy` |
-| `--eligible-to-sell` / `--no-eligible-to-sell` | Set or clear `eligible_to_sell` |
-| `--sold` / `--no-sold` | Set or clear `sold` |
+| `--eligible-to-donate` / `--no-eligible-to-donate` | Set or clear `eligible_to_donate` |
+| `--donated` / `--no-donated` | Set or clear `donated` |
 
 Status changes do not modify timestamps — set `--started-at` / `--finished-at` explicitly.
 
@@ -245,7 +245,7 @@ books count --status TO_BUY --category FICTION --priority --json
 | `--status` | _(none)_ | Filter by status |
 | `--category` | _(none)_ | Filter by category |
 | `--priority` | `false` | Only priority-to-buy books |
-| `--eligible-to-sell` | `false` | Only eligible-to-sell books |
+| `--eligible-to-donate` | `false` | Only eligible-to-donate books |
 
 ## `stats`
 

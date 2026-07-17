@@ -75,7 +75,7 @@ The DB mixes **pt-BR and English** titles/descriptions. Search is case-insensiti
 **Workflow:** Run `search` or `list` with `--json` → read `total`, `page`, `limit`, `books` → if `total > limit`, show `Page X of Y (N total)`; fetch more pages only when needed. Pagination/field flags: [reference.md#pagination](reference.md#pagination).
 
 ```bash
-books list [--status STATUS] [--category CATEGORY] [--priority] [--eligible-to-sell] [--sort FIELD] [--order asc|desc] --page 1 --limit 20 [--fields id,title,status] --json
+books list [--status STATUS] [--category CATEGORY] [--priority] [--eligible-to-donate] [--sort FIELD] [--order asc|desc] --page 1 --limit 20 [--fields id,title,status] --json
 books search [--term "<term>" ...] ["<query>"] [--author "<author>"] [--category CATEGORY] [--sort FIELD] [--order asc|desc] --page 1 --limit 20 [--fields id,title,status] --json
 ```
 
@@ -86,10 +86,10 @@ Present list/search results as a table: ID, Title, Author, Category, Status, Pri
 | Intent | Command |
 | --- | --- |
 | View one book | `books get <id> --json` or `books get --title "<title>" [--exact] [--author "..."] --json` |
-| Count books | `books count [--status STATUS] [--category CATEGORY] [--priority] [--eligible-to-sell] --json` |
+| Count books | `books count [--status STATUS] [--category CATEGORY] [--priority] [--eligible-to-donate] --json` |
 | Library stats | `books stats [--year YYYY] --json` |
 | Update fields | `books update <id> --status READ [--category FICTION] ... --json` |
-| Clear booleans | `books update <id> --no-priority` / `--no-eligible-to-sell` / `--no-sold --json` |
+| Clear booleans | `books update <id> --no-priority` / `--no-eligible-to-donate` / `--no-donated --json` |
 | Remove from active lists | `books update <id> --status ARCHIVED --json` |
 | Permanently delete | `books delete <id> -y --json` (destructive; `-y` required with `--json`) |
 | Export library | `books export --format json --output books.json --json` |

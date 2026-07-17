@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Renamed `eligible_to_sell` / `sold` to `eligible_to_donate` / `donated` (DB columns, JSON keys, CLI flags, and table output)
+
+### Removed
+
+- `--eligible-to-sell`, `--no-eligible-to-sell`, `--sold`, `--no-sold` flags (replaced by donate equivalents)
+
 ## [0.6.0] - 2026-07-09
 
 ### Added

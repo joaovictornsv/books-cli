@@ -7,37 +7,37 @@ import (
 )
 
 type Book struct {
-	ID             int64     `json:"id"`
-	Title          string    `json:"title"`
-	Author         *string   `json:"author,omitempty"`
-	Category       *Category `json:"category,omitempty"`
-	Status         Status    `json:"status"`
-	PriorityToBuy  int       `json:"priority_to_buy"`
-	EligibleToSell int       `json:"eligible_to_sell"`
-	Sold           int       `json:"sold"`
-	Notes          *string   `json:"notes,omitempty"`
-	Description    *string   `json:"description,omitempty"`
-	AddedAt        string    `json:"added_at"`
-	StartedAt      *string   `json:"started_at,omitempty"`
-	FinishedAt     *string   `json:"finished_at,omitempty"`
+	ID               int64     `json:"id"`
+	Title            string    `json:"title"`
+	Author           *string   `json:"author,omitempty"`
+	Category         *Category `json:"category,omitempty"`
+	Status           Status    `json:"status"`
+	PriorityToBuy    int       `json:"priority_to_buy"`
+	EligibleToDonate int       `json:"eligible_to_donate"`
+	Donated          int       `json:"donated"`
+	Notes            *string   `json:"notes,omitempty"`
+	Description      *string   `json:"description,omitempty"`
+	AddedAt          string    `json:"added_at"`
+	StartedAt        *string   `json:"started_at,omitempty"`
+	FinishedAt       *string   `json:"finished_at,omitempty"`
 }
 
 type BookPatch struct {
-	Title           *string
-	Author          *string
-	ClearAuthor     bool
-	Category        *Category
-	ClearCategory   bool
-	Status          *Status
-	PriorityToBuy   *int
-	EligibleToSell  *int
-	Sold            *int
-	Notes           *string
-	Description     *string
-	StartedAt       *string
-	ClearStartedAt  bool
-	FinishedAt      *string
-	ClearFinishedAt bool
+	Title            *string
+	Author           *string
+	ClearAuthor      bool
+	Category         *Category
+	ClearCategory    bool
+	Status           *Status
+	PriorityToBuy    *int
+	EligibleToDonate *int
+	Donated          *int
+	Notes            *string
+	Description      *string
+	StartedAt        *string
+	ClearStartedAt   bool
+	FinishedAt       *string
+	ClearFinishedAt  bool
 }
 
 func ToBool01(v bool) int {
@@ -71,10 +71,10 @@ func (b *Book) ValidateForCreate() error {
 	if err := ValidateBool01("priority_to_buy", b.PriorityToBuy); err != nil {
 		return err
 	}
-	if err := ValidateBool01("eligible_to_sell", b.EligibleToSell); err != nil {
+	if err := ValidateBool01("eligible_to_donate", b.EligibleToDonate); err != nil {
 		return err
 	}
-	if err := ValidateBool01("sold", b.Sold); err != nil {
+	if err := ValidateBool01("donated", b.Donated); err != nil {
 		return err
 	}
 	return nil
@@ -115,13 +115,13 @@ func (p *BookPatch) Validate() error {
 			return err
 		}
 	}
-	if p.EligibleToSell != nil {
-		if err := ValidateBool01("eligible_to_sell", *p.EligibleToSell); err != nil {
+	if p.EligibleToDonate != nil {
+		if err := ValidateBool01("eligible_to_donate", *p.EligibleToDonate); err != nil {
 			return err
 		}
 	}
-	if p.Sold != nil {
-		if err := ValidateBool01("sold", *p.Sold); err != nil {
+	if p.Donated != nil {
+		if err := ValidateBool01("donated", *p.Donated); err != nil {
 			return err
 		}
 	}

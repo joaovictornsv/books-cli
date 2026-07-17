@@ -23,8 +23,8 @@ func TestUpdateManyRollsBackOnMissingID(t *testing.T) {
 		Title:          "Dune",
 		Status:         models.StatusNotStarted,
 		PriorityToBuy:  0,
-		EligibleToSell: 0,
-		Sold:           0,
+		EligibleToDonate: 0,
+		Donated:           0,
 		AddedAt:        models.NowTimestamp(),
 	})
 	if err != nil {
@@ -89,8 +89,8 @@ func TestExportImportJSONRoundTrip(t *testing.T) {
 		Author:         &author,
 		Status:         models.StatusToBuy,
 		PriorityToBuy:  1,
-		EligibleToSell: 0,
-		Sold:           0,
+		EligibleToDonate: 0,
+		Donated:           0,
 		AddedAt:        models.NowTimestamp(),
 	})
 	if err != nil {
@@ -152,8 +152,8 @@ func TestImportDryRunDoesNotWrite(t *testing.T) {
 		Title:          "Dune",
 		Status:         models.StatusToBuy,
 		PriorityToBuy:  0,
-		EligibleToSell: 0,
-		Sold:           0,
+		EligibleToDonate: 0,
+		Donated:           0,
 		AddedAt:        models.NowTimestamp(),
 	}}
 
@@ -188,8 +188,8 @@ func TestImportUpsertUpdatesExisting(t *testing.T) {
 		Title:          "Dune",
 		Status:         models.StatusToBuy,
 		PriorityToBuy:  0,
-		EligibleToSell: 0,
-		Sold:           0,
+		EligibleToDonate: 0,
+		Donated:           0,
 		AddedAt:        models.NowTimestamp(),
 	})
 	if err != nil {
@@ -222,8 +222,8 @@ func TestWriteAndReadBooksCSV(t *testing.T) {
 		Author:         &author,
 		Status:         models.StatusToBuy,
 		PriorityToBuy:  1,
-		EligibleToSell: 0,
-		Sold:           0,
+		EligibleToDonate: 0,
+		Donated:           0,
 		AddedAt:        "2024-01-01T00:00:00Z",
 	}
 
@@ -247,8 +247,8 @@ func mustCreateBook(t *testing.T, repo *Repository, ctx context.Context, title s
 		Title:          title,
 		Status:         models.StatusNotStarted,
 		PriorityToBuy:  0,
-		EligibleToSell: 0,
-		Sold:           0,
+		EligibleToDonate: 0,
+		Donated:           0,
 		AddedAt:        models.NowTimestamp(),
 	})
 	if err != nil {

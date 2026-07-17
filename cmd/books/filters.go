@@ -6,16 +6,16 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func addListFilterFlags(cmd *cobra.Command, status, category *string, priority, eligibleToSell *bool) {
+func addListFilterFlags(cmd *cobra.Command, status, category *string, priority, eligibleToDonate *bool) {
 	cmd.Flags().StringVar(status, "status", "", "Filter by status")
 	if category != nil {
 		cmd.Flags().StringVar(category, "category", "", "Filter by category")
 	}
 	cmd.Flags().BoolVar(priority, "priority", false, "Only priority-to-buy books")
-	cmd.Flags().BoolVar(eligibleToSell, "eligible-to-sell", false, "Only eligible-to-sell books")
+	cmd.Flags().BoolVar(eligibleToDonate, "eligible-to-donate", false, "Only eligible-to-donate books")
 }
 
-func listFilterFromFlags(cmd *cobra.Command, status *string, category *string, priority, eligibleToSell *bool) (db.ListFilter, error) {
+func listFilterFromFlags(cmd *cobra.Command, status *string, category *string, priority, eligibleToDonate *bool) (db.ListFilter, error) {
 	filter := db.ListFilter{}
 
 	if cmd.Flags().Changed("status") {
@@ -35,8 +35,8 @@ func listFilterFromFlags(cmd *cobra.Command, status *string, category *string, p
 	if cmd.Flags().Changed("priority") {
 		filter.PriorityToBuy = priority
 	}
-	if cmd.Flags().Changed("eligible-to-sell") {
-		filter.EligibleToSell = eligibleToSell
+	if cmd.Flags().Changed("eligible-to-donate") {
+		filter.EligibleToDonate = eligibleToDonate
 	}
 	return filter, nil
 }

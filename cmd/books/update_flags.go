@@ -9,21 +9,21 @@ import (
 )
 
 var (
-	updateTitle            string
-	updateAuthor           string
-	updateCategory         string
-	updateStatus           string
-	updateNotes            string
-	updateDescription      string
-	updateStartedAt        string
-	updateFinishedAt       string
-	updatePriority         bool
-	updateNoPriority       bool
-	updateEligibleToSell   bool
-	updateNoEligibleToSell bool
-	updateSold             bool
-	updateNoSold           bool
-	updateIDs              string
+	updateTitle              string
+	updateAuthor             string
+	updateCategory           string
+	updateStatus             string
+	updateNotes              string
+	updateDescription        string
+	updateStartedAt          string
+	updateFinishedAt         string
+	updatePriority           bool
+	updateNoPriority         bool
+	updateEligibleToDonate   bool
+	updateNoEligibleToDonate bool
+	updateDonated            bool
+	updateNoDonated          bool
+	updateIDs                string
 )
 
 func addUpdateFlags(cmd *cobra.Command) {
@@ -37,10 +37,10 @@ func addUpdateFlags(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&updateFinishedAt, "finished-at", "", "Finished reading at (RFC3339); pass empty string to clear")
 	cmd.Flags().BoolVar(&updatePriority, "priority", false, "Set priority to buy")
 	cmd.Flags().BoolVar(&updateNoPriority, "no-priority", false, "Clear priority to buy")
-	cmd.Flags().BoolVar(&updateEligibleToSell, "eligible-to-sell", false, "Set eligible to sell")
-	cmd.Flags().BoolVar(&updateNoEligibleToSell, "no-eligible-to-sell", false, "Clear eligible to sell")
-	cmd.Flags().BoolVar(&updateSold, "sold", false, "Mark as sold")
-	cmd.Flags().BoolVar(&updateNoSold, "no-sold", false, "Clear sold flag")
+	cmd.Flags().BoolVar(&updateEligibleToDonate, "eligible-to-donate", false, "Set eligible to donate")
+	cmd.Flags().BoolVar(&updateNoEligibleToDonate, "no-eligible-to-donate", false, "Clear eligible to donate")
+	cmd.Flags().BoolVar(&updateDonated, "donated", false, "Mark as donated")
+	cmd.Flags().BoolVar(&updateNoDonated, "no-donated", false, "Clear donated flag")
 	cmd.Flags().StringVar(&updateIDs, "ids", "", "Comma-separated book IDs to update in bulk")
 }
 
@@ -107,27 +107,27 @@ func buildUpdatePatch(cmd *cobra.Command) (models.BookPatch, error) {
 		v := 0
 		patch.PriorityToBuy = &v
 	}
-	if flags.Changed("eligible-to-sell") {
-		if flags.Changed("no-eligible-to-sell") {
-			return models.BookPatch{}, fmt.Errorf("cannot use --eligible-to-sell and --no-eligible-to-sell together")
+	if flags.Changed("eligible-to-donate") {
+		if flags.Changed("no-eligible-to-donate") {
+			return models.BookPatch{}, fmt.Errorf("cannot use --eligible-to-donate and --no-eligible-to-donate together")
 		}
-		v := models.ToBool01(updateEligibleToSell)
-		patch.EligibleToSell = &v
+		v := models.ToBool01(updateEligibleToDonate)
+		patch.EligibleToDonate = &v
 	}
-	if flags.Changed("no-eligible-to-sell") {
+	if flags.Changed("no-eligible-to-donate") {
 		v := 0
-		patch.EligibleToSell = &v
+		patch.EligibleToDonate = &v
 	}
-	if flags.Changed("sold") {
-		if flags.Changed("no-sold") {
-			return models.BookPatch{}, fmt.Errorf("cannot use --sold and --no-sold together")
+	if flags.Changed("donated") {
+		if flags.Changed("no-donated") {
+			return models.BookPatch{}, fmt.Errorf("cannot use --donated and --no-donated together")
 		}
-		v := models.ToBool01(updateSold)
-		patch.Sold = &v
+		v := models.ToBool01(updateDonated)
+		patch.Donated = &v
 	}
-	if flags.Changed("no-sold") {
+	if flags.Changed("no-donated") {
 		v := 0
-		patch.Sold = &v
+		patch.Donated = &v
 	}
 
 	if isPatchEmpty(patch) {
@@ -141,7 +141,7 @@ func isPatchEmpty(patch models.BookPatch) bool {
 		patch.Category == nil && !patch.ClearCategory && patch.Status == nil &&
 		patch.Notes == nil && patch.Description == nil && patch.StartedAt == nil &&
 		!patch.ClearStartedAt && patch.FinishedAt == nil && !patch.ClearFinishedAt &&
-		patch.PriorityToBuy == nil && patch.EligibleToSell == nil && patch.Sold == nil
+		patch.PriorityToBuy == nil && patch.EligibleToDonate == nil && patch.Donated == nil
 }
 
 func parseIDsList(raw string) ([]int64, error) {

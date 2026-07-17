@@ -53,8 +53,8 @@ func TestBookValidate(t *testing.T) {
 		Author:         &author,
 		Status:         StatusNotStarted,
 		PriorityToBuy:  0,
-		EligibleToSell: 0,
-		Sold:           0,
+		EligibleToDonate: 0,
+		Donated:           0,
 		AddedAt:        NowTimestamp(),
 	}
 	if err := book.Validate(); err != nil {
@@ -72,8 +72,8 @@ func TestBookValidateForCreate(t *testing.T) {
 		Title:          "Title",
 		Status:         StatusNotStarted,
 		PriorityToBuy:  0,
-		EligibleToSell: 0,
-		Sold:           0,
+		EligibleToDonate: 0,
+		Donated:           0,
 	}
 	if err := book.ValidateForCreate(); err != nil {
 		t.Fatal(err)

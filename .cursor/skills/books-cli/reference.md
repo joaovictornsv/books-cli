@@ -58,7 +58,7 @@ Used by `list` and `search`:
 
 Allowed `--sort`: `id`, `title`, `author`, `status`, `added_at`, `started_at`, `finished_at`.
 
-Allowed `--fields`: `id`, `title`, `author`, `category`, `status`, `priority_to_buy`, `eligible_to_sell`, `sold`, `notes`, `description`, `added_at`, `started_at`, `finished_at`.
+Allowed `--fields`: `id`, `title`, `author`, `category`, `status`, `priority_to_buy`, `eligible_to_donate`, `donated`, `notes`, `description`, `added_at`, `started_at`, `finished_at`.
 
 Pagination is always on. Check `total` vs `len(books)` — never assume one page is the full set.
 
@@ -74,8 +74,8 @@ Pagination is always on. Check `total` vs `len(books)` — never assume one page
   "category": "FICTION",
   "status": "TO_BUY",
   "priority_to_buy": 0,
-  "eligible_to_sell": 0,
-  "sold": 0,
+  "eligible_to_donate": 0,
+  "donated": 0,
   "notes": "",
   "description": "Epic science fiction saga set on Arrakis.",
   "added_at": "2024-01-01T00:00:00Z",
@@ -96,7 +96,7 @@ Pagination is always on. Check `total` vs `len(books)` — never assume one page
 | `--category` | empty | **Agent must set** |
 | `--status` | `NOT_STARTED` | Agent default: `TO_BUY` |
 | `--priority` | false | Sets `priority_to_buy = 1` |
-| `--eligible-to-sell` | false | |
+| `--eligible-to-donate` | false | |
 | `--notes` | empty | |
 | `--description` | empty | **Agent must set** — same language as title |
 
@@ -134,7 +134,7 @@ Same filters as `list` (archived excluded). No pagination.
 | `--status` | none |
 | `--category` | none |
 | `--priority` | false (filter) |
-| `--eligible-to-sell` | false (filter) |
+| `--eligible-to-donate` | false (filter) |
 
 JSON: `{ "total": N }`.
 
@@ -184,7 +184,7 @@ Upserts by `id`. JSON: `{ "created": N, "updated": M, "total": T, "dry_run": fal
 | `--status` | none |
 | `--category` | none |
 | `--priority` | false (filter) |
-| `--eligible-to-sell` | false (filter) |
+| `--eligible-to-donate` | false (filter) |
 
 Plus [pagination and sorting](#pagination). Archived excluded unless `--status ARCHIVED`.
 
@@ -239,12 +239,12 @@ Archived excluded from `by_status` and `by_category`. `priority_wishlist` counts
 
 ### `update [id]`
 
-At least one flag: `--title`, `--author`, `--category`, `--status`, `--notes`, `--description`, `--started-at`, `--finished-at`, `--priority`, `--no-priority`, `--eligible-to-sell`, `--no-eligible-to-sell`, `--sold`, `--no-sold`. Pass `--category ""`, `--started-at ""`, or `--finished-at ""` to clear.
+At least one flag: `--title`, `--author`, `--category`, `--status`, `--notes`, `--description`, `--started-at`, `--finished-at`, `--priority`, `--no-priority`, `--eligible-to-donate`, `--no-eligible-to-donate`, `--donated`, `--no-donated`. Pass `--category ""`, `--started-at ""`, or `--finished-at ""` to clear.
 
 Provide either positional `id` or `--ids` (comma-separated), not both.
 
 Bulk update JSON: `{ "updated": [], "count": N }`.
 
-Prefer `--no-priority`, `--no-eligible-to-sell`, `--no-sold` to clear booleans explicitly.
+Prefer `--no-priority`, `--no-eligible-to-donate`, `--no-donated` to clear booleans explicitly.
 
 Status changes do not set or clear timestamps automatically. Set `--started-at` / `--finished-at` explicitly (RFC3339).

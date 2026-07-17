@@ -76,8 +76,8 @@ func TestJSONFormatterWithFields(t *testing.T) {
 		Title:          "Dune",
 		Status:         models.StatusReading,
 		PriorityToBuy:  1,
-		EligibleToSell: 0,
-		Sold:           0,
+		EligibleToDonate: 0,
+		Donated:           0,
 		AddedAt:        "2024-01-01T00:00:00Z",
 	}
 
