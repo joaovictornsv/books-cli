@@ -90,6 +90,7 @@ Present list/search results as a table: ID, Title, Author, Category, Status, Pri
 | Library stats | `books stats [--year YYYY] --json` |
 | Update fields | `books update <id> --status READ [--category FICTION] ... --json` |
 | Clear booleans | `books update <id> --no-priority` / `--no-eligible-to-donate` / `--no-donated --json` |
+| Mark donated | `books update <id> --donated --no-eligible-to-donate --json` (see [Donation](#donation)) |
 | Remove from active lists | `books update <id> --status ARCHIVED --json` |
 | Permanently delete | `books delete <id> -y --json` (destructive; `-y` required with `--json`) |
 | Export library | `books export --format json --output books.json --json` |
@@ -98,6 +99,19 @@ Present list/search results as a table: ID, Title, Author, Category, Status, Pri
 | Show DB path | `books config --json` |
 
 `update` needs at least one flag. Prefer `--no-priority` (etc.) to clear boolean fields explicitly.
+
+## Donation
+
+`eligible_to_donate` = still waiting to donate. `donated` = already given away. They must not both be true.
+
+**When marking donated:** always clear eligibility in the same update:
+
+```bash
+books update <id> --donated --no-eligible-to-donate --json
+books update --ids 1,2,3 --donated --no-eligible-to-donate --json
+```
+
+**Lists:** `books list --eligible-to-donate` means “ready to donate” (not yet donated). Do not leave donated books with `eligible_to_donate = 1`.
 
 Status/category enums and JSON fields: [reference.md](reference.md). Phrase examples: [examples.md](examples.md).
 

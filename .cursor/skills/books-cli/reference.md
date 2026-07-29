@@ -247,4 +247,6 @@ Bulk update JSON: `{ "updated": [], "count": N }`.
 
 Prefer `--no-priority`, `--no-eligible-to-donate`, `--no-donated` to clear booleans explicitly.
 
+**Donation (agent rule):** `donated` and `eligible_to_donate` must not both be true. When setting `--donated`, always also pass `--no-eligible-to-donate` so “eligible” means still waiting to donate.
+
 Status changes do not set or clear timestamps automatically. Set `--started-at` / `--finished-at` explicitly (RFC3339).

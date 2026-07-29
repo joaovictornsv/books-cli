@@ -69,6 +69,9 @@ books search --term hobbit --term "o hobbit" --json
 | "Recategorize book 42 as biography" | `books update 42 --category BIOGRAPHY --json` |
 | "Start reading book 7" | `books update 7 --status READING --started-at "<RFC3339>" --json` |
 | "Remove priority from book 3" | `books update 3 --no-priority --json` |
+| "Mark book 42 as donated" | `books update 42 --donated --no-eligible-to-donate --json` |
+| "Mark books 1, 2, 3 as donated" | `books update --ids 1,2,3 --donated --no-eligible-to-donate --json` |
+| "Books eligible to donate" | `books list --eligible-to-donate --json` |
 | "Show book 42" | `books get 42 --json` |
 | "Show Dune" | `books get --title "Dune" --exact --json` |
 | "Remove book 42 from my list" | `books update 42 --status ARCHIVED --json` |
