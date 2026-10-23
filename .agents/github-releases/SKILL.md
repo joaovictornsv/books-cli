@@ -48,10 +48,11 @@ git push origin main
 git push origin "$VERSION"
 
 # Build release binary (linux/amd64) from the tagged commit
+# -trimpath keeps local filesystem paths (e.g. /home/<user>/...) out of the binary
 LDFLAGS="-s -w \
   -X github.com/joaovictornsv/books-cli/internal/buildinfo.Version=${VERSION#v} \
   -X github.com/joaovictornsv/books-cli/internal/buildinfo.Commit=$(git rev-parse HEAD)"
-GOOS=linux GOARCH=amd64 go build -ldflags="$LDFLAGS" -o "$ASSET" ./cmd/books
+GOOS=linux GOARCH=amd64 go build -trimpath -ldflags="$LDFLAGS" -o "$ASSET" ./cmd/books
 
 # Generate checksum file for the release binary
 sha256sum "$ASSET" > SHA256SUMS
